@@ -114,7 +114,7 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - [x] Phase 0: Project setup (monorepo, docs, tokens, frontend scaffold, backend scaffold, routing spike)
 - [x] Phase 1: Backend core logic and tests (risk, sampling, ETA, analysis, ranking — 127 tests, 98% coverage)
 - [x] Phase 2: Backend integrations and API (Mapbox routing, Open-Meteo weather, orchestrator, trip endpoints — 183 tests, 95% coverage)
-- [ ] Phase 3: Frontend foundation and app shell (Stage A complete: housekeeping, tooling, test framework, proxy)
+- [ ] Phase 3: Frontend foundation and app shell (Stages A & B complete: tooling, typed API client, hooks, fixtures)
 - [ ] Phase 4: Planner, map, route cards, recommendation
 - [ ] Phase 5: Route detail and checkpoint table
 - [ ] Phase 6: Heatmap and 0-48h slider
@@ -131,6 +131,15 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - Configured Vite dev proxy (`/api` -> `http://localhost:8000`).
   - Added npm scripts: `typecheck` (`tsc --noEmit`), `test` (`vitest`), `test:run` (`vitest run`).
   - Verified Geist Sans Variable and Geist Mono Variable font assets (`.woff2`) are properly extracted and mapped in production build (`dist/assets/`).
+- **Stage B (Typed API Layer, Data Hooks & Real Fixtures)**:
+  - Created `src/types/api.ts`: Strict TypeScript models for `TripAnalysisRequest`, `TripAnalysisResponse`, `RouteOption`, `Checkpoint`, `RiskSegment`, `RouteSummary`, `RiskRulesResponse`, `GeocodeResult`, and error models matching the real Django backend.
+  - Created `src/lib/api/client.ts`: Robust typed `apiFetch` wrapper with `ApiError` class (`code`, `status`, `message`, `details`), 60s timeout for analysis, 10s timeout for lookups, AbortSignal support, and network error mapping.
+  - Created `src/lib/api/endpoints.ts`: Clean endpoint functions for `getHealth`, `getRiskRules`, `geocode`, `analyzeTrip`.
+  - Created hooks in `src/hooks/`: `useDebouncedValue` (250ms), `useRiskRules` (`staleTime: Infinity`), `useGeocode` (debounced >=2 chars, 5m stale), `useAnalyzeTrip` (10m stale, retry once for 502/network and never for 4xx), `useHealth` (dev only).
+  - Configured React Query client in `src/app/App.tsx` (`refetchOnWindowFocus: false`).
+  - Captured real backend fixtures: `src/mocks/dallas-denver.json` (952 KB, 3 distinct routes, complete weather status, zero tokens) and `src/mocks/risk-rules.json`.
+  - Exported typed fixtures via `src/mocks/index.ts`.
+  - Added unit test suite in `src/test/`: 13 passing Vitest tests covering api client errors, abort signals, timeouts, debouncing, and fixture schema validation.
 
 ## Phase 2 Log
 - Created `backend/trips/clients/`: `http.py` (retries, timeouts, token redaction), `mapbox.py` (Directions v5, Geocode v6), `open_meteo.py` (chunking <=50, parallel fetching, unit checks)
@@ -170,11 +179,10 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - `decided_by` = criterion separating best from runner-up (not from worst); for A(46 severe)/B(0 severe,28 high)/C(0 severe,61 high): B beats C on `high_miles` (both have 0 severe), so `decided_by=high_miles`
 
 ## Next Step
-Phase 3 - Stage B: typed API layer and data hooks
-  - Create `src/types/api.ts` mirroring real backend models
-  - Implement `src/lib/api/client.ts` with typed `ApiError`, abort signal, and timeouts
-  - Implement `src/lib/api/endpoints.ts` and React Query hooks (`useRiskRules`, `useGeocode`, `useAnalyzeTrip`)
-  - Capture and export real fixtures (`src/mocks/dallas-denver.json`, `src/mocks/index.ts`)
+Phase 3 - Stage C: design system components (src/components/ui/)
+  - Build UI components matching docs/design: Button, IconButton, Input, SegmentedControl, RiskShape, RiskBadge, Pill, Surface/Card/Panel, Divider, Skeleton, ProgressBar, Stat, Num, Toast system, InlineAlert, EmptyState.
+  - Implement formatters in `src/lib/format.ts` and runtime risk token resolver in `src/lib/risk.ts`.
+  - Build dev component gallery `/dev/components`.
 
 ## Known Issues
 - `segment_miles_owned`: line 62 of sampling.py is unreachable in current test paths (empty geometry guard before this branch)
