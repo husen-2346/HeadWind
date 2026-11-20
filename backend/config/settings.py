@@ -8,16 +8,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env if present
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-dev-key-change-in-production")
-DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver").split(",")
-    if host.strip()
-]
+raw_secret = os.getenv("SECRET_KEY", "")
+if not raw_secret:
+    if DEBUG or os.getenv("PYTEST_CURRENT_TEST"):
+        SECRET_KEY = "django-insecure-local-dev-key-change-in-production"
+    else:
+        raise RuntimeError("SECRET_KEY environment variable is required when DEBUG is False.")
+else:
+    SECRET_KEY = raw_secret
+
+allowed_hosts_env = os.getenv("ALLOWED_HOSTS")
+if allowed_hosts_env is not None:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(",") if h.strip()]
+else:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"] if DEBUG else []
+
 if "testserver" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("testserver")
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -111,13 +122,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS configuration
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-    ).split(",")
-    if origin.strip()
-]
+cors_env = os.getenv("CORS_ALLOWED_ORIGINS")
+if cors_env is not None:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_env.split(",") if o.strip()]
+else:
+    CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"] if DEBUG else []
 
 # Django REST Framework configuration (JSON only renderer, scoped throttling, unified exception handler)
 REST_FRAMEWORK = {
@@ -130,8 +139,30 @@ REST_FRAMEWORK = {
         "analyze": "12/min",
         "heatmap": "12/min",
     },
+    "NUM_PROXIES": int(os.getenv("NUM_PROXIES", "1")),
     "EXCEPTION_HANDLER": "trips.errors.drf_exception_handler",
     "UNAUTHENTICATED_USER": None,
+}
+
+# Logging configuration: stdout with timestamp, level, name, and message
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("LOG_LEVEL", "INFO"),
+    },
 }
 
 # Third-party API keys and integration settings

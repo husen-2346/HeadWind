@@ -272,8 +272,39 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - Landing page (`/`): **Performance: 90 | Accessibility: 94 | Best Practices: 100 | SEO: 91**.
   - Dispatcher app (`/app`): **Performance: 80 | Accessibility: 100 | Best Practices: 96 | SEO: 91** (80 perf on `/app` is due to WebGL Mapbox GL JS canvas engine initialization and 1.9MB vendor chunk, while critical app bundle is code-split to 95kB).
 
-## Next Step
-Stage E: Production config (Django production settings, WhiteNoise, gunicorn, render.yaml, vercel.json, GitHub Actions CI, complete README.md with Mermaid diagrams, docs/WALKTHROUGH.md).
+## Phase 5 Log (Stage E - Production Prep, Docs, Walkthrough)
+- **Production Settings (`backend/config/settings.py`)**:
+  - `DEBUG = False` by default.
+  - Required `SECRET_KEY` in production (raises `RuntimeError` if missing when `DEBUG` is `False`).
+  - Strict `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` parsed from environment variables (comma-separated, default empty in production).
+  - `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")`.
+  - WhiteNoise configured for static file compression and caching (`CompressedManifestStaticFilesStorage`).
+  - DRF configured with `NUM_PROXIES` environment variable support for accurate reverse-proxy client IP throttling.
+  - Standardized stdout logging formatter (`%(asctime)s [%(levelname)s] %(name)s: %(message)s`).
+- **Deployment Artifacts**:
+  - `render.yaml`: Blueprint for Render web service running Gunicorn on Python 3.13 with auto-migrations.
+  - `frontend/vercel.json` & `vercel.json`: Clean SPA routing rewrites and immutable asset caching headers.
+  - `.github/workflows/ci.yml`: GitHub Actions pipeline executing backend checks (Python 3.13, Ruff lint & format, Pytest with $\ge 90\%$ coverage gate) and frontend checks (Node 20, ESLint, TypeScript `tsc --noEmit`, Vitest + jest-axe tests, production Vite build).
+- **Documentation**:
+  - `README.md`: Overhauled with project elevator pitch, live URLs, Mermaid system architecture diagram, algorithmic decision rationales (ETA interpolation, candidate generation, load escalation, safety recommendation hierarchy), environment variables catalog, 5-command local setup, and deployment guides.
+  - `docs/WALKTHROUGH.md`: 7:30 minute Loom walkthrough video script complete with timestamps, screen-recording cues, and talking points.
+
+## Phase 5 Log (Stage F - Final Audit)
+- Backend:
+  - 194 pytest tests passing in 3.6s with **96% code coverage** (`pytest --cov=trips`).
+  - Ruff lint check: 0 errors (`ruff check .`).
+  - Ruff format check: 47 files clean (`ruff format --check .`).
+- Frontend:
+  - ESLint: 0 warnings, 0 errors (`eslint .`).
+  - TypeScript: 0 errors (`tsc --noEmit`).
+  - Vitest: 20 test suites, 125 tests passing (100%).
+  - A11y: 0 WCAG 2.1 AA violations on jest-axe across all components and pages.
+  - Vite build: clean code-split bundle (Landing page 34kB CSS, 557kB main JS; AppPage lazy-loaded 95kB JS; Mapbox lazy-loaded).
+  - Lighthouse: 90+ across all 4 categories on landing page; 100% accessibility on dispatcher app.
+- Secrets Scan:
+  - Clean audit across working tree and git commit history: no committed `.env` files, no hardcoded API tokens (`pk.`, `sk.`).
+
+## Project Status: COMPLETE (Phases 0–5 Built, Tested, Hardened & Documented)
 
 ## Phase 1 Log
 - Created `backend/trips/services/`: constants.py, types.py, geo.py, sampling.py, eta.py, risk.py, analysis.py, recommend.py, __init__.py
