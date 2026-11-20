@@ -9,8 +9,9 @@ Usage:
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
+
 import httpx
+from dotenv import load_dotenv
 
 # Load .env from backend root or parent if present
 backend_dir = Path(__file__).resolve().parent.parent
@@ -27,6 +28,7 @@ DEST_LON, DEST_LAT = -104.9903, 39.7392
 
 METERS_TO_MILES = 0.000621371
 SECONDS_TO_HOURS = 1.0 / 3600.0
+
 
 def main():
     if not MAPBOX_TOKEN or MAPBOX_TOKEN == "pk.your_mapbox_public_token_here":
@@ -95,6 +97,7 @@ def main():
         "\nRoutes do not account for bridge weight ratings, clearances, or hazmat restrictions."
         "\nThis limitation is documented in docs/ASSUMPTIONS.md."
     )
+
 
 if __name__ == "__main__":
     main()
