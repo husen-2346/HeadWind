@@ -96,7 +96,7 @@ class OpenMeteoClient:
                 wind_u = units.get("wind_speed_10m")
                 rain_u = units.get("rain")
                 snow_u = units.get("snowfall")
-                if wind_u != "mph" or rain_u != "inch" or snow_u != "inch":
+                if wind_u not in ("mph", "mp/h") or rain_u != "inch" or snow_u != "inch":
                     raise UpstreamWeatherError(
                         f"Unexpected weather units from Open-Meteo: wind={wind_u}, rain={rain_u}, snow={snow_u}"
                     )

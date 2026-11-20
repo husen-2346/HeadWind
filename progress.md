@@ -113,13 +113,37 @@ rank_routes(summaries_by_route_id) -> Recommendation
 ## Phase Checklist
 - [x] Phase 0: Project setup (monorepo, docs, tokens, frontend scaffold, backend scaffold, routing spike)
 - [x] Phase 1: Backend core logic and tests (risk, sampling, ETA, analysis, ranking — 127 tests, 98% coverage)
-- [ ] Phase 2: Backend integrations and API (Mapbox routing, Open-Meteo weather, trip endpoints)
+- [x] Phase 2: Backend integrations and API (Mapbox routing, Open-Meteo weather, orchestrator, trip endpoints — 183 tests, 95% coverage)
 - [ ] Phase 3: Frontend foundation and app shell
 - [ ] Phase 4: Planner, map, route cards, recommendation
 - [ ] Phase 5: Route detail and checkpoint table
 - [ ] Phase 6: Heatmap and 0-48h slider
 - [ ] Phase 7: Landing page, states, mobile, accessibility, performance
 - [ ] Phase 8: README, final tests, deploy prep
+
+## Phase 2 Log
+- Created `backend/trips/clients/`: `http.py` (retries, timeouts, token redaction), `mapbox.py` (Directions v5, Geocode v6), `open_meteo.py` (chunking <=50, parallel fetching, unit checks)
+- Extended `backend/trips/services/`:
+  - `candidates.py`: `offset_waypoint` (lateral via-points), `simplify_polyline` (non-recursive RDP), `route_similarity` (bidirectional spatial-grid), `select_routes` (greedy diversity selection)
+  - `geo.py`: `geometry_slice` (sub-polyline extraction between mile markers)
+  - `eta.py`: `build_profile_from_annotations` (annotation profile scaling, downsampling to <=2000 points, fallback)
+  - `weather_lookup.py`: `lookup_weather` (UTC timestamps, linear wind interpolation, preceding-hour precipitation bucket rule, rain+showers summation)
+- Created `backend/trips/timezones.py`: `get_timezone_at` (TimezoneFinder), `resolve_departure` (departure window validation `[-1h, +72h]`)
+- Created `backend/trips/errors.py`: unified `AppError` hierarchy, `drf_exception_handler` with token redaction
+- Created `backend/trips/cache.py`: `LocMemCache` wrapper (directions TTL 3600s, weather TTL 1800s)
+- Created `backend/trips/serializers.py`: `CoordinateField`, `AnalyzeTripRequestSerializer` (2-mile origin-dest validation, ISO departure, load bounds)
+- Created `backend/trips/responses.py`: standard response builder adhering to API schema
+- Created `backend/trips/usecases/analyze_trip.py`: orchestrator pipeline (`TripAnalyzer`) coordinating routing, diversity variants, checkpoint ETAs, weather queries, risk segments, and recommendations
+- Configured Views and Endpoints:
+  - `GET /api/health` -> `{"status": "ok"}`
+  - `GET /api/risk-rules` -> canonical `RISK_RULES`
+  - `GET /api/geocode?q=...` -> Mapbox geocoding proxy (throttled at 60 req/min)
+  - `POST /api/analyze` -> Full trip analysis (throttled at 12 req/min)
+- Created `backend/scripts/smoke_analyze.py`: live verification script testing Dallas to Denver live corridor (tested and passing with COMPLETE weather status)
+- Created `docs/API.md`: full endpoint specification, request/response models, error catalog, curl examples
+- Updated `docs/ASSUMPTIONS.md`: documented route generation, Open-Meteo rules, caching, rate limits, CC BY 4.0 attribution
+- **Test suite**: 183 passed tests (56 new tests across test_stage_a.py, test_stage_b.py, test_stage_c.py, test_stage_d.py)
+- **Coverage**: **95%** across all backend code
 
 ## Phase 1 Log
 - Created `backend/trips/services/`: constants.py, types.py, geo.py, sampling.py, eta.py, risk.py, analysis.py, recommend.py, __init__.py
@@ -135,16 +159,13 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - `decided_by` = criterion separating best from runner-up (not from worst); for A(46 severe)/B(0 severe,28 high)/C(0 severe,61 high): B beats C on `high_miles` (both have 0 severe), so `decided_by=high_miles`
 
 ## Next Step
-Phase 2: Backend integrations and API
-  - Mapbox Directions API integration: fetch up to 3 routes, extract geometry, distance, duration
-  - Open-Meteo weather integration: query forecast at each checkpoint ETA
-  - `GET /api/risk-rules` exposing `RISK_RULES`
-  - `POST /api/trips` → accept origin/dest/departure/load, return ranked routes with full checkpoint data
-  - Cache responses to avoid duplicate API calls within a session
+Phase 3: Frontend foundation and app shell
+  - Set up API client and TanStack Query hooks for `/api/health`, `/api/risk-rules`, `/api/geocode`, `/api/analyze`
+  - Implement app shell, layout, navigation, and state stores
+  - Ensure Geist Sans / Mono typography and token consistency
 
 ## Known Issues
-- Phase 2 must handle Mapbox returning fewer than 3 alternatives (design a fallback)
 - `segment_miles_owned`: line 62 of sampling.py is unreachable in current test paths (empty geometry guard before this branch)
 
 ## Resume Instructions
-Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist.
+Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist (Phase 3).

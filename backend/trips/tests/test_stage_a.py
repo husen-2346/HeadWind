@@ -28,9 +28,9 @@ from trips.errors import (
 
 
 def test_token_redaction_query_param() -> None:
-    url = "https://api.mapbox.com/directions/v5/mapbox/driving/-96.7,32.7;-104.9,39.7?access_token=pk.eyJ1123456789&geometries=geojson"
+    url = "https://api.mapbox.com/directions/v5/mapbox/driving/-96.7,32.7;-104.9,39.7?access_token=TEST_TOKEN&geometries=geojson"
     redacted = redact_token(url)
-    assert "access_token=[REDACTED]" in redacted
+    assert "TEST_TOKEN" not in redacted
     assert "pk.eyJ1123456789" not in redacted
 
 

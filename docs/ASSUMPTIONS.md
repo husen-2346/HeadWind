@@ -161,3 +161,58 @@ Routes where any checkpoint has `Weather()` with all fields `None` have
 `unknown_miles > 0`. Such routes rank after all complete-data routes,
 regardless of their other metrics. Their `unknown_miles` are excluded
 from the avg_risk calculation.
+
+---
+
+### 13. Candidate Route Generation & Diversity Fallback
+
+Mapbox Directions v5 often returns only 1 or 2 routes for long-distance corridors
+even with `alternatives=true` (e.g. Dallas to Denver yields only 2 alternatives).
+To ensure 3 distinct options as required:
+1. Primary directions request with `alternatives=true`.
+2. Filter candidates:
+   - Max distance multiplier: 1.4 × min_distance
+   - Max duration multiplier: 1.5 × min_duration
+   - Deduplication: similarity ≥ 0.90 discarded (keeping the faster route).
+3. If fewer than 3 routes remain, generate variants in parallel (`ThreadPoolExecutor`):
+   - `exclude=toll`
+   - `exclude=motorway`
+   - 4 lateral via-waypoints: perpendicular offsets at 35%, 45%, 55%, 65% along the
+     corridor with ±15% and ±25% lateral offset.
+4. Merge and run greedy diverse selection. If fewer than 3 distinct routes can be found,
+   return what is available and attach warning `code='fewer_routes'`.
+
+---
+
+### 14. Open-Meteo Weather Lookup & Interpolation Rules
+
+1. **Exact UTC Timestamps**: Timestamps from Open-Meteo are in GMT/UTC.
+2. **Wind Speed**: Linearly interpolated between the surrounding two hourly forecast marks.
+3. **Precipitation**: Open-Meteo hourly precipitation reflects the preceding hour sum.
+   Lookup extracts the value at the first hour boundary at or after the checkpoint ETA.
+   Total rain is the sum of `rain` and `showers`.
+4. **No Extrapolation**: Checkpoints whose ETA falls outside the forecast window return
+   `Weather(None, None, None)` and are marked as unknown.
+5. **Weather Resilience**: If Open-Meteo is completely unavailable (502 or timeout),
+   the pipeline returns route geometry and travel times with `weather_status='unavailable'`
+   and `recommendation=null`. It never crashes the user's trip analysis.
+
+---
+
+### 15. Caching and Rate Limiting Policies
+
+- **Directions Cache**: Keyed to origin/destination coordinates at 4 decimal places (~11 m). TTL = 3600 seconds.
+- **Weather Cache**: Keyed to checkpoint coordinates at 2 decimal places (~1.1 km). TTL = 1800 seconds.
+- **Cache Backend**: Django Local-Memory Cache (`LocMemCache`).
+- **Throttling**: DRF `ScopedRateThrottle` enforces:
+  - `POST /api/analyze`: 12 requests / minute.
+  - `GET /api/geocode`: 60 requests / minute.
+
+---
+
+### 16. Attributions & Licenses
+
+- Routing: Mapbox Directions API v5.
+- Geocoding: Mapbox Geocoding API v6.
+- Weather: Open-Meteo Weather Forecast API under Creative Commons Attribution 4.0 International (CC BY 4.0).
+
