@@ -6,10 +6,14 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Button } from "@/components/ui/Button";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { RoutesLayers } from "@/components/map/RoutesLayers";
+import { HeatmapLayer } from "@/components/map/HeatmapLayer";
+import { TimeScrubber } from "@/components/map/TimeScrubber";
 import { MapLegend } from "@/components/map/MapLegend";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { PlannerForm } from "@/features/planner/PlannerForm";
 import { RouteResults } from "@/features/routes/RouteResults";
 import { RouteDetailPanel } from "@/features/routes/RouteDetailPanel";
+import { HeatmapPanel } from "@/features/heatmap/HeatmapPanel";
 
 export interface AppShellProps {
   children?: React.ReactNode;
@@ -18,6 +22,8 @@ export interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const panelState = useAppStore((s) => s.panelState);
   const togglePanel = useAppStore((s) => s.togglePanel);
+  const mode = useAppStore((s) => s.mode);
+  const setMode = useAppStore((s) => s.setMode);
   const analysisResult = useAppStore((s) => s.analysisResult);
   const origin = useAppStore((s) => s.origin);
   const destination = useAppStore((s) => s.destination);
@@ -32,6 +38,7 @@ export function AppShell({ children }: AppShellProps) {
       {/* Base Map in Background */}
       <main className="absolute inset-0 z-0" aria-label="Map Canvas Area">
         <MapCanvas className="w-full h-full">
+          <HeatmapLayer />
           <RoutesLayers />
           <MapLegend />
         </MapCanvas>
@@ -119,7 +126,20 @@ export function AppShell({ children }: AppShellProps) {
                   </Button>
                 </div>
 
-                <RouteResults />
+                {/* Mode Toggle: Routes | Heatmap */}
+                <SegmentedControl
+                  name="app-mode-toggle"
+                  ariaLabel="Select view mode"
+                  value={mode}
+                  onChange={(newMode) => setMode(newMode as "routes" | "heatmap")}
+                  options={[
+                    { value: "routes", label: "Routes" },
+                    { value: "heatmap", label: "Heatmap" },
+                  ]}
+                  className="w-full"
+                />
+
+                {mode === "routes" ? <RouteResults /> : <HeatmapPanel />}
               </div>
             ) : (
               <div className="space-y-3">
@@ -142,12 +162,13 @@ export function AppShell({ children }: AppShellProps) {
         )}
       </aside>
 
-      {/* Reserved Slot for Bottom-Center Time Scrubber (Phase 6) */}
+      {/* Bottom-Center Time Scrubber (Visible in Heatmap Mode) */}
       <div
         id="forecast-scrubber-slot"
         className="pointer-events-none absolute bottom-4 inset-x-0 z-20 flex justify-center px-4"
-        aria-hidden="true"
-      />
+      >
+        <TimeScrubber />
+      </div>
     </div>
   );
 }

@@ -26,6 +26,8 @@ export {
   MapPin,
   Menu,
   Navigation,
+  Pause,
+  Play,
   RotateCcw,
   Search,
   Sliders,
