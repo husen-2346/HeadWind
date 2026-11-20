@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={t.id}
               className={clsx(
-                "pointer-events-auto flex items-center justify-between gap-3 p-3 bg-surface border border-border rounded-card shadow-xl text-14 text-text animate-in fade-in slide-in-from-bottom-2 duration-200"
+                "pointer-events-auto flex items-center justify-between gap-3 p-3 bg-surface border border-border rounded-card text-14 text-text animate-in fade-in slide-in-from-bottom-2 duration-200"
               )}
             >
               <div className="flex items-center gap-2">

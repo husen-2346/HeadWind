@@ -29,7 +29,7 @@ export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undef
  * Execute an API fetch call, enforcing JSON encoding/decoding, timeouts, and sanitized error mapping.
  */
 export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { timeoutMs = 10000, signal: callerSignal, ...init } = options;
+  const { timeoutMs = 8000, signal: callerSignal, ...init } = options;
 
   const controller = new AbortController();
   let timedOut = false;
@@ -41,6 +41,10 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
 
   // Link caller signal if provided
   if (callerSignal) {
+    if (callerSignal.aborted) {
+      clearTimeout(timeoutId);
+      throw new ApiError("aborted", "Request was aborted by the client", 0);
+    }
     callerSignal.addEventListener("abort", () => {
       controller.abort();
     });
@@ -98,7 +102,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
 
     throw new ApiError(
       "bad_response",
-      `HTTP error ${response.status} ${response.statusText}`,
+      `API returned HTTP ${response.status}`,
       response.status
     );
   }
@@ -107,7 +111,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
     return (await response.json()) as T;
   } catch (err: unknown) {
     throw new ApiError(
-      "bad_response",
+      "json_parse_error",
       err instanceof Error ? err.message : "Failed to parse JSON response",
       response.status
     );

@@ -110,7 +110,7 @@ export function MapCanvas({ children, className, onMapLoad }: MapCanvasProps) {
         {/* Missing Token or Error Fallback */}
         {loadError && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 bg-bg/95 backdrop-blur-sm text-center">
-            <div className="p-6 max-w-md bg-surface border border-border rounded-panel space-y-4 shadow-2xl">
+            <div className="p-6 max-w-md bg-surface border border-border rounded-panel space-y-4">
               <div className="w-10 h-10 rounded-full bg-risk-moderate/15 text-risk-moderate flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-5 h-5" />
               </div>

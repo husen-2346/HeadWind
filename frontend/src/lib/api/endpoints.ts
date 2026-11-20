@@ -15,7 +15,7 @@ export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return apiFetch<HealthResponse>("/api/health", {
     method: "GET",
     signal,
-    timeoutMs: 10000,
+    timeoutMs: 8000,
   });
 }
 
@@ -23,7 +23,7 @@ export async function getRiskRules(signal?: AbortSignal): Promise<RiskRulesRespo
   return apiFetch<RiskRulesResponse>("/api/risk-rules", {
     method: "GET",
     signal,
-    timeoutMs: 10000,
+    timeoutMs: 8000,
   });
 }
 
@@ -32,7 +32,7 @@ export async function geocode(q: string, signal?: AbortSignal): Promise<GeocodeR
   return apiFetch<GeocodeResult[]>(`/api/geocode?${params.toString()}`, {
     method: "GET",
     signal,
-    timeoutMs: 10000,
+    timeoutMs: 8000,
   });
 }
 
@@ -44,6 +44,6 @@ export async function analyzeTrip(
     method: "POST",
     body: JSON.stringify(request),
     signal,
-    timeoutMs: 60000,
+    timeoutMs: 30000,
   });
 }

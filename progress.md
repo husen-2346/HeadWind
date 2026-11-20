@@ -206,4 +206,4 @@ Phase 4: Planner, map, route cards, recommendation
 - `segment_miles_owned`: line 62 of sampling.py is unreachable in current test paths (empty geometry guard before this branch)
 
 ## Resume Instructions
-Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist (Phase 3).
+Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist (Phase 4).

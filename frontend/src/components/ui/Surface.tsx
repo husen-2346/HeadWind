@@ -10,7 +10,7 @@ export function Surface({ elevated = false, className, children, ...props }: Sur
     <div
       className={clsx(
         "bg-surface border border-border rounded-panel",
-        elevated && "shadow-xl shadow-bg/50",
+        elevated && "border-text-muted/30",
         className
       )}
       {...props}

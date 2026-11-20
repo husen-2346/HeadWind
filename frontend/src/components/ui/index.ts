@@ -1,6 +1,8 @@
 export * from "./Button";
 export * from "./IconButton";
 export * from "./Input";
+export * from "./NumberInput";
+export * from "./Combobox";
 export * from "./SegmentedControl";
 export * from "./RiskShape";
 export * from "./RiskBadge";
@@ -16,6 +18,8 @@ export * from "./Num";
 export * from "./VisuallyHidden";
 export * from "./ToastContext";
 export * from "./Toast";
+export * from "./Tooltip";
 export * from "./InlineAlert";
 export * from "./EmptyState";
+export * from "./ErrorState";
 export * from "./icons";

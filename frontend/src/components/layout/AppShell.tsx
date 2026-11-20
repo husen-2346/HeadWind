@@ -34,7 +34,7 @@ export function AppShell({ children }: AppShellProps) {
           isCollapsed
             ? "md:w-14 md:h-14 md:bottom-auto max-h-14 overflow-hidden"
             : "h-[65vh] md:h-auto max-h-[calc(100dvh-2rem)]",
-          "bg-surface border border-border md:rounded-panel rounded-t-panel shadow-2xl backdrop-blur-md"
+          "bg-surface border border-border md:rounded-panel rounded-t-panel backdrop-blur-md"
         )}
       >
         {/* Panel Header */}
