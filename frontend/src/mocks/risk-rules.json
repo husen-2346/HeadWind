@@ -1,0 +1,141 @@
+{
+  "levels": [
+    "LOW",
+    "MODERATE",
+    "HIGH",
+    "SEVERE",
+    "NO_TRAVEL"
+  ],
+  "variables": {
+    "wind_mph": {
+      "unit": "mph",
+      "description": "Sustained wind speed at 10 m (not gusts)",
+      "thresholds": [
+        {
+          "level": "LOW",
+          "lower_inclusive": 0.0,
+          "upper_exclusive": 25.0
+        },
+        {
+          "level": "MODERATE",
+          "lower_inclusive": 25.0,
+          "upper_exclusive": 35.0
+        },
+        {
+          "level": "HIGH",
+          "lower_inclusive": 35.0,
+          "upper_exclusive": 45.0
+        },
+        {
+          "level": "SEVERE",
+          "lower_inclusive": 45.0,
+          "upper_exclusive": 55.0
+        },
+        {
+          "level": "NO_TRAVEL",
+          "lower_inclusive": 55.0,
+          "upper_exclusive": null
+        }
+      ]
+    },
+    "rain_in_hr": {
+      "unit": "in/hr",
+      "description": "Precipitation rate (rain)",
+      "thresholds": [
+        {
+          "level": "LOW",
+          "lower_inclusive": 0.0,
+          "upper_exclusive": 0.1
+        },
+        {
+          "level": "MODERATE",
+          "lower_inclusive": 0.1,
+          "upper_exclusive": 0.25
+        },
+        {
+          "level": "HIGH",
+          "lower_inclusive": 0.25,
+          "upper_exclusive": 0.5
+        },
+        {
+          "level": "SEVERE",
+          "lower_inclusive": 0.5,
+          "upper_inclusive": 1.0
+        },
+        {
+          "level": "NO_TRAVEL",
+          "lower_exclusive": 1.0,
+          "upper_exclusive": null
+        }
+      ]
+    },
+    "snow_in_hr": {
+      "unit": "in/hr",
+      "description": "Precipitation rate (snow/sleet)",
+      "thresholds": [
+        {
+          "level": "LOW",
+          "lower_inclusive": 0.0,
+          "upper_exclusive": 0.5
+        },
+        {
+          "level": "MODERATE",
+          "lower_inclusive": 0.5,
+          "upper_exclusive": 1.0
+        },
+        {
+          "level": "HIGH",
+          "lower_inclusive": 1.0,
+          "upper_exclusive": 2.0
+        },
+        {
+          "level": "SEVERE",
+          "lower_inclusive": 2.0,
+          "upper_inclusive": 3.0
+        },
+        {
+          "level": "NO_TRAVEL",
+          "lower_exclusive": 3.0,
+          "upper_exclusive": null
+        }
+      ]
+    }
+  },
+  "load_rules": [
+    {
+      "min_wind_mph": 55.0,
+      "max_wind_mph": null,
+      "min_load_lb": null,
+      "escalate_to": "NO_TRAVEL",
+      "description": "Wind >= 55 mph is No Travel for any load"
+    },
+    {
+      "min_wind_mph": 45.0,
+      "max_wind_mph": 55.0,
+      "min_load_lb": 30000.0,
+      "escalate_to": "NO_TRAVEL",
+      "description": "Wind 45-54 mph and load > 30,000 lb: No Travel"
+    },
+    {
+      "min_wind_mph": 35.0,
+      "max_wind_mph": 45.0,
+      "min_load_lb": 40000.0,
+      "escalate_to": "SEVERE",
+      "description": "Wind 35-44 mph and load > 40,000 lb: Severe"
+    }
+  ],
+  "recommendation_order": [
+    "no_travel_miles (ascending)",
+    "severe_miles (ascending)",
+    "high_miles (ascending)",
+    "avg_risk (ascending)",
+    "duration_seconds (ascending)"
+  ],
+  "notes": [
+    "Checkpoint risk = worst of wind, rain and snow.",
+    "Load rules apply to wind only.",
+    "Load comparisons use strict greater-than (> not >=).",
+    "Routes with unknown weather rank after fully-known routes.",
+    "Routing uses Mapbox driving profile \u2013 not truck-restricted."
+  ]
+}
