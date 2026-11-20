@@ -5,6 +5,7 @@
 export {
   AlertOctagon,
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   Check,
   CheckCircle,

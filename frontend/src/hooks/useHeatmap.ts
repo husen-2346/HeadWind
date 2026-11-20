@@ -12,6 +12,7 @@ import type { ApiError } from "@/lib/api/client";
 
 export function useHeatmap(request: HeatmapRequest | null) {
   const isMock =
+    Boolean(import.meta.env.DEV) &&
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("mock") === "1";
 

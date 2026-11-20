@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import clsx from "clsx";
 import { useAppStore } from "@/stores/appStore";
 import { ChevronLeft, ChevronRight, Menu, Sliders } from "@/components/ui/icons";
@@ -33,6 +33,15 @@ export function AppShell({ children }: AppShellProps) {
   const isCollapsed = panelState === "collapsed";
   const isDetailView = panelState === "detail";
 
+  // Dynamic document.title
+  useEffect(() => {
+    if (origin && destination) {
+      document.title = `${origin.label || "Origin"} to ${destination.label || "Destination"} — Headwind`;
+    } else {
+      document.title = "Headwind | Weather-Aware Truck Routing";
+    }
+  }, [origin, destination]);
+
   return (
     <div className="relative w-screen h-dvh overflow-hidden bg-bg select-none flex">
       {/* Base Map in Background */}
@@ -56,7 +65,7 @@ export function AppShell({ children }: AppShellProps) {
           isCollapsed
             ? "md:w-14 md:h-14 md:bottom-auto max-h-14 overflow-hidden"
             : "h-[70vh] md:h-auto max-h-[calc(100dvh-2rem)]",
-          "bg-surface border border-border md:rounded-panel rounded-t-panel backdrop-blur-md"
+          "bg-surface border border-border md:rounded-panel rounded-t-panel backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)] md:pb-0"
         )}
       >
         {/* Panel Header */}
@@ -162,10 +171,25 @@ export function AppShell({ children }: AppShellProps) {
         )}
       </aside>
 
-      {/* Bottom-Center Time Scrubber (Visible in Heatmap Mode) */}
+      {/* Floating Pill on Mobile when drawer is collapsed */}
+      {isCollapsed && (
+        <div className="md:hidden fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <Button
+            variant="subtle"
+            size="sm"
+            onClick={togglePanel}
+            leadingIcon={<Sliders className="w-3.5 h-3.5" />}
+            className="shadow-xl backdrop-blur-md bg-surface/95 border border-border text-12 px-3 py-1.5"
+          >
+            Route options
+          </Button>
+        </div>
+      )}
+
+      {/* Bottom-Center Time Scrubber (Visible in Heatmap Mode, anchored above mobile browser chrome) */}
       <div
         id="forecast-scrubber-slot"
-        className="pointer-events-none absolute bottom-4 inset-x-0 z-20 flex justify-center px-4"
+        className="pointer-events-none absolute bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-20 flex justify-center px-4"
       >
         <TimeScrubber />
       </div>

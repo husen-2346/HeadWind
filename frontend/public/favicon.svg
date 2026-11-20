@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#0B0F14" />
+  <rect x="1" y="1" width="30" height="30" rx="7" stroke="#223040" stroke-width="1.5" />
+  <!-- Wind streamline arrows -->
+  <path d="M6 10 H18 C20 10 21 8.5 21 7" stroke="#5CC8FF" stroke-width="2" stroke-linecap="round" />
+  <path d="M4 15 H24 C26 15 27 13.5 27 12" stroke="#5CC8FF" stroke-width="2" stroke-linecap="round" />
+  <path d="M8 20 H19 C20.5 20 21.5 21 21.5 22" stroke="#5CC8FF" stroke-width="2" stroke-linecap="round" />
+  <!-- Direction chevron -->
+  <polygon points="26,12 21,9 22.5,12 21,15" fill="#5CC8FF" />
+</svg>

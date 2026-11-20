@@ -2,7 +2,9 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LandingPage } from "@/pages/LandingPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { DevComponentsPage } from "@/pages/DevComponentsPage";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 
 // Lazy-load AppPage so Mapbox GL JS v3 is chunked separately and never in the initial bundle
 const AppPage = React.lazy(() => import("@/pages/AppPage"));
@@ -28,22 +30,24 @@ function PageLoading() {
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoading />}>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/app" element={<AppPage />} />
-            {import.meta.env.DEV && (
-              <>
-                <Route path="/dev/components" element={<DevComponentsPage />} />
-                <Route path="/dev/tokens" element={<Navigate to="/dev/components" replace />} />
-              </>
-            )}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Suspense fallback={<PageLoading />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/app" element={<AppPage />} />
+              {import.meta.env.DEV && (
+                <>
+                  <Route path="/dev/components" element={<DevComponentsPage />} />
+                  <Route path="/dev/tokens" element={<Navigate to="/dev/components" replace />} />
+                </>
+              )}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

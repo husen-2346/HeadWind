@@ -32,6 +32,7 @@ export function useAnalyzeTrip() {
     onSuccess: (_data, variables) => {
       // Prefetch corridor heatmap as soon as analysis succeeds
       const isMock =
+        Boolean(import.meta.env.DEV) &&
         typeof window !== "undefined" &&
         new URLSearchParams(window.location.search).get("mock") === "1";
 

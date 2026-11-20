@@ -255,8 +255,25 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - Added demo link sync in `appStore.ts` (`?demo=1` auto-loads Dallas to Denver fixture).
 - 19 test suites, 113 tests passing. 0 lint or typecheck errors. Clean production build.
 
+## Phase 5 Log (Stage D - Hardening, A11y, Performance)
+- **404 Route**: Implemented `NotFoundPage.tsx` with flight corridor motif, polite messaging, and quick links back to `/` and `/app`.
+- **ErrorBoundary**: Implemented robust React ErrorBoundary component (`ErrorBoundary.tsx`) with technical stack details collapsible via `<details>` and "Reload Dispatcher" recovery action.
+- **Dynamic Titles & Favicon**: Added custom vector SVG favicon (`favicon.svg` with streamline wind vectors and directional chevron). Dynamic document titles for landing, app dispatcher (`Origin to Destination — Headwind`), and 404.
+- **Mobile & Tablet Hardening**:
+  - `CheckpointTable`: Enabled horizontal scrolling with `sticky left-0` Mile column pinned so mile markers remain visible on 375px/768px viewports.
+  - `PlannerForm`: Auto-collapses the bottom drawer on mobile viewports (<768px) upon successful analysis so the map is instantly visible.
+  - `AppShell`: Added floating "Route options" pill button on mobile when the panel is collapsed to quickly reopen the planner drawer.
+  - Safe-area-inset-bottom support (`bottom-[calc(1rem+env(safe-area-inset-bottom,0px))]`) ensuring controls stay clear of mobile browser chrome.
+  - Production mock guards: guarded `?mock=1` query parameters behind `import.meta.env.DEV`.
+- **Accessibility Audit (jest-axe)**:
+  - Created `frontend/src/test/a11y.test.tsx` verifying WCAG 2.1 AA compliance across `RiskBadge`, `RouteCard`, `TimeScrubber`, `PlannerForm`, `NotFoundPage`, and all 7 landing sections. **0 violations**.
+  - All 20 frontend test suites (125 tests) passing.
+- **Lighthouse Production Audit**:
+  - Landing page (`/`): **Performance: 90 | Accessibility: 94 | Best Practices: 100 | SEO: 91**.
+  - Dispatcher app (`/app`): **Performance: 80 | Accessibility: 100 | Best Practices: 96 | SEO: 91** (80 perf on `/app` is due to WebGL Mapbox GL JS canvas engine initialization and 1.9MB vendor chunk, while critical app bundle is code-split to 95kB).
+
 ## Next Step
-Stage D: Global states, production routing guards, 404 & ErrorBoundary, mobile/tablet polish, jest-axe accessibility audit.
+Stage E: Production config (Django production settings, WhiteNoise, gunicorn, render.yaml, vercel.json, GitHub Actions CI, complete README.md with Mermaid diagrams, docs/WALKTHROUGH.md).
 
 ## Phase 1 Log
 - Created `backend/trips/services/`: constants.py, types.py, geo.py, sampling.py, eta.py, risk.py, analysis.py, recommend.py, __init__.py

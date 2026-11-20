@@ -80,12 +80,12 @@ export function CheckpointTable({
         className
       )}
     >
-      <div className="overflow-y-auto max-h-[420px] relative">
-        <table className="w-full text-left border-collapse" role="table">
+      <div ref={tableContainerRef} className="overflow-x-auto overflow-y-auto max-h-[420px] relative">
+        <table className="w-full min-w-[340px] text-left border-collapse" role="table">
           {/* Sticky Header */}
           <thead className="sticky top-0 z-10 bg-surface/95 backdrop-blur-sm border-b border-border shadow-none">
             <tr className="text-12 font-medium uppercase tracking-wider text-text-muted">
-              <th className="py-2.5 pl-3 pr-2 font-mono">Mile</th>
+              <th className="sticky left-0 z-20 bg-surface/95 backdrop-blur-sm py-2.5 pl-3 pr-2 font-mono">Mile</th>
               <th className="py-2.5 px-2 font-mono">ETA</th>
               <th className="py-2.5 px-2 text-right font-mono">Wind</th>
               <th className="py-2.5 px-2 text-right font-mono">Rain</th>
@@ -132,8 +132,17 @@ export function CheckpointTable({
                           : "hover:bg-border/30 text-text"
                   )}
                 >
-                  {/* Mile */}
-                  <td className="py-2 pl-3 pr-2 tabular-nums font-medium text-text">
+                  {/* Mile (Sticky left column) */}
+                  <td
+                    className={clsx(
+                      "sticky left-0 z-10 py-2 pl-3 pr-2 tabular-nums font-medium text-text",
+                      isSelected
+                        ? "bg-surface"
+                        : isSevereOrNoTravel
+                          ? "bg-surface"
+                          : "bg-surface"
+                    )}
+                  >
                     {Math.round(cp.mile)}
                   </td>
 

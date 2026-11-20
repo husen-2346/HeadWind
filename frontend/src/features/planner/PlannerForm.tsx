@@ -94,6 +94,9 @@ export function PlannerForm() {
     analyze(requestPayload, {
       onSuccess: (data) => {
         setAnalysisResult(data);
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
+          useAppStore.getState().setPanelState("collapsed");
+        }
       },
       onError: (err) => {
         if (err.code !== "aborted") {
