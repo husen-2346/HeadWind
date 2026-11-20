@@ -18,6 +18,15 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          mapbox: ["mapbox-gl"],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",
