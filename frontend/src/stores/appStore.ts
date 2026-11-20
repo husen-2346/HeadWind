@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Place } from "@/features/planner/validation";
 import type { TripAnalysisResponse } from "@/types/api";
+import { dallasDenverFixture } from "@/mocks";
 
 export type PanelState = "open" | "collapsed" | "detail";
 
@@ -249,6 +250,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       if ([10, 25, 50].includes(parsedI)) {
         updates.intervalMiles = parsedI as 10 | 25 | 50;
       }
+    }
+
+    const demoParam = params.get("demo");
+    if (demoParam === "1") {
+      updates.origin = { label: "Dallas, Texas, United States", lat: 32.7767, lon: -96.797 };
+      updates.destination = { label: "Denver, Colorado, United States", lat: 39.7392, lon: -104.9903 };
+      updates.originInput = "Dallas, Texas, United States";
+      updates.destinationInput = "Denver, Colorado, United States";
+      updates.loadLb = 42000;
+      updates.intervalMiles = 25;
+      updates.analysisResult = dallasDenverFixture;
+      updates.selectedRouteId = dallasDenverFixture.summary.recommended_route_id || "route_b";
     }
 
     if (Object.keys(updates).length > 0) {

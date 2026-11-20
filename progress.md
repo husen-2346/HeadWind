@@ -217,7 +217,7 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - **Test suite**: 183 passed tests (56 new tests across test_stage_a.py, test_stage_b.py, test_stage_c.py, test_stage_d.py)
 - **Coverage**: **95%** across all backend code
 
-## Phase 5 Log (Stage A)
+## Phase 5 Log (Stage A - Backend Heatmap)
 - Implemented `offset_point`, `bearing_degrees`, and `corridor_points` in `backend/trips/services/geo.py`:
   - `offset_point(lat, lon, bearing_deg, miles)` computes destination point using spherical haversine formula.
   - `bearing_degrees(lat1, lon1, lat2, lon2)` calculates true north forward bearing.
@@ -229,6 +229,34 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - Added `POST /api/heatmap` in `trips/views.py` and `trips/urls.py` with 12 req/min rate limit.
 - 194 passed backend tests (11 new tests in `test_heatmap.py`).
 - 96% test coverage across all backend code. Ruff check & format clean.
+
+## Phase 5 Log (Stage B - Frontend Heatmap & Scrubber)
+- Extended types in `frontend/src/types/api.ts` (`HeatmapPoint`, `HeatmapMeta`, `HeatmapResponse`, `HeatmapRequest`).
+- Added API client endpoint `fetchHeatmap` in `frontend/src/lib/api/endpoints.ts`.
+- Created deterministic mock generator `frontend/src/mocks/heatmapMock.ts`.
+- Implemented `useHeatmap` hook with automatic TanStack query caching (10m stale time), `?mock=1` support, and prefetching on trip analysis.
+- Created Mapbox circle heatmap visualization `HeatmapLayer.tsx` (blur 0.85, opacity 0.5, `circle-sort-key`, 60 fps paint updates via `requestAnimationFrame`).
+- Implemented `HeatmapPanel.tsx` (time readout, 5-level risk scale legend + No Data row, grid stats).
+- Implemented `TimeScrubber.tsx` (WAI-ARIA slider, 49 ticks, max risk ribbon, play/pause loop, prefers-reduced-motion support, departure marker pin).
+- Added `SegmentedControl` mode toggle ("Routes | Heatmap") in `AppShell.tsx`.
+- 18 test suites, 108 tests passing.
+
+## Phase 5 Log (Stage C - Landing Page)
+- Configured repo metadata in `frontend/src/config.ts` (`REPO_URL`, `LOOM_URL`).
+- Built 8 cohesive landing page sections adhering strictly to design guidelines:
+  1. `LandingNavbar`: sticky nav with brand mark, anchor links (`#how-it-works`, `#risk-rules`, `#heatmap`), GitHub repo link, and Launch App CTA. Mobile drawer with focus trap & Escape key.
+  2. `HeroSection`: dark grid background (`bg-grid`) + radial glow (`bg-glow`), approved headline, subhead with risk rules summary, Route B summary badge (0 severe, 28 high), sample corridor SVG graphic with 1 origin / 1 dest marker, "Illustrative" label.
+  3. `HowItWorksSection`: interactive/static time-distance graph showing 2 trucks departing 4 hours apart encountering storm cell at Mile 520, explaining dynamic checkpoint ETAs.
+  4. `HeatmapSection`: corridor heatmap SVG preview, static 49-hour scrubber demo, 5-level risk scale legend.
+  5. `RiskRulesSection`: wind, rain, snow threshold rulers with exact units and boundaries. Interactive cargo load slider (0..100k lb) demonstrating live risk escalation (>30k lb and >40k lb thresholds).
+  6. `WhyThisRouteSection`: criteria comparison table reusing `CriteriaComparison` on real Dallas-to-Denver routes.
+  7. `CtaSection`: high-contrast banner with contour line motif and primary/demo launch links.
+  8. `LandingFooter`: attribution to Open-Meteo CC BY 4.0, Mapbox, OpenStreetMap, and commercial planning disclaimer.
+- Added demo link sync in `appStore.ts` (`?demo=1` auto-loads Dallas to Denver fixture).
+- 19 test suites, 113 tests passing. 0 lint or typecheck errors. Clean production build.
+
+## Next Step
+Stage D: Global states, production routing guards, 404 & ErrorBoundary, mobile/tablet polish, jest-axe accessibility audit.
 
 ## Phase 1 Log
 - Created `backend/trips/services/`: constants.py, types.py, geo.py, sampling.py, eta.py, risk.py, analysis.py, recommend.py, __init__.py
