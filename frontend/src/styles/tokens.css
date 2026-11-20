@@ -1,0 +1,76 @@
+/*
+  HEADWIND DESIGN TOKENS
+  Single source of truth for color hex codes, typography, radii, and grid settings.
+  NO hard-coded hex values outside this file!
+*/
+
+:root {
+  /* Colors: Core UI */
+  --color-bg: #0B0F14;
+  --color-surface: #121923;
+  --color-border: #1F2A37;
+  --color-text: #E6EDF3;
+  --color-text-muted: #8B98A5;
+  --color-accent: #5CC8FF;
+
+  /* Risk Ramp (used ONLY for weather data) */
+  --color-risk-low: #2E9CCA;
+  --color-risk-moderate: #E8C547;
+  --color-risk-high: #F28C28;
+  --color-risk-severe: #D1344B;
+  --color-risk-no-travel: #6A1B4D;
+
+  /* Typography */
+  --font-sans: "Geist Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", monospace;
+
+  /* Type Scale */
+  --font-size-12: 0.75rem;       /* 12px */
+  --line-height-12: 1rem;         /* 16px */
+
+  --font-size-14: 0.875rem;      /* 14px */
+  --line-height-14: 1.25rem;      /* 20px */
+
+  --font-size-16: 1rem;          /* 16px */
+  --line-height-16: 1.5rem;       /* 24px */
+
+  --font-size-20: 1.25rem;       /* 20px */
+  --line-height-20: 1.75rem;      /* 28px */
+
+  --font-size-28: 1.75rem;       /* 28px */
+  --line-height-28: 2.25rem;      /* 36px */
+
+  /* Display sizes with tight line-height and negative letter-spacing */
+  --font-size-display-32: 2rem;       /* 32px */
+  --line-height-display-32: 2.25rem;  /* 36px */
+  --letter-spacing-display-32: -0.015em;
+
+  --font-size-display-40: 2.5rem;     /* 40px */
+  --line-height-display-40: 2.75rem;  /* 44px */
+  --letter-spacing-display-40: -0.02em;
+
+  --font-size-display-56: 3.5rem;     /* 56px */
+  --line-height-display-56: 3.75rem;  /* 60px */
+  --letter-spacing-display-56: -0.025em;
+
+  /* Border Radii */
+  --radius-input: 6px;
+  --radius-badge: 6px;
+  --radius-card: 8px;
+  --radius-panel: 12px;
+
+  /* Grid & Backgrounds */
+  --grid-size: 24px;
+  --grid-line-alpha: 0.06;
+  --grid-line-color: rgba(148, 163, 184, var(--grid-line-alpha));
+
+  /* Glow */
+  --glow-alpha: 0.16;
+  --glow-color: rgba(92, 200, 255, var(--glow-alpha));
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --grid-size: 28px;
+  }
+}
