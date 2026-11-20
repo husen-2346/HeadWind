@@ -6,9 +6,25 @@ Import from here to stay decoupled from the internal module layout.
 """
 
 from .analysis import analyze_route
-from .constants import EARTH_RADIUS_MILES, LOAD_RULES, RISK_RULES
+from .candidates import (
+    offset_waypoint,
+    route_similarity,
+    select_routes,
+    simplify_polyline,
+)
+from .constants import (
+    EARTH_RADIUS_MILES,
+    LOAD_RULES,
+    MAX_DISTANCE_MULTIPLIER,
+    MAX_DURATION_MULTIPLIER,
+    RISK_RULES,
+    SIMILARITY_DUPLICATE_THRESHOLD,
+    SIMILARITY_SAMPLE_MILES,
+    SIMILARITY_TOLERANCE_MILES,
+    SIMPLIFY_TOLERANCE_DEG,
+)
 from .eta import eta_datetime, eta_seconds_at_mile, linear_profile
-from .geo import cumulative_miles, haversine_miles, point_at_mile
+from .geo import cumulative_miles, geometry_slice, haversine_miles, point_at_mile
 from .recommend import rank_routes
 from .risk import classify_checkpoint, classify_rain, classify_snow, classify_wind
 from .sampling import sample_checkpoints, segment_miles_owned
@@ -17,6 +33,7 @@ from .types import (
     CheckpointRisk,
     Recommendation,
     RiskLevel,
+    RouteCandidate,
     RouteComparison,
     RouteSummary,
     Weather,
@@ -27,21 +44,34 @@ __all__ = [
     "EARTH_RADIUS_MILES",
     "LOAD_RULES",
     "RISK_RULES",
+    "MAX_DISTANCE_MULTIPLIER",
+    "MAX_DURATION_MULTIPLIER",
+    "SIMILARITY_DUPLICATE_THRESHOLD",
+    "SIMILARITY_SAMPLE_MILES",
+    "SIMILARITY_TOLERANCE_MILES",
+    "SIMPLIFY_TOLERANCE_DEG",
     # types
     "Checkpoint",
     "CheckpointRisk",
     "Recommendation",
     "RiskLevel",
+    "RouteCandidate",
     "RouteComparison",
     "RouteSummary",
     "Weather",
     # geo
     "cumulative_miles",
+    "geometry_slice",
     "haversine_miles",
     "point_at_mile",
     # sampling
     "sample_checkpoints",
     "segment_miles_owned",
+    # candidates
+    "offset_waypoint",
+    "route_similarity",
+    "select_routes",
+    "simplify_polyline",
     # eta
     "eta_datetime",
     "eta_seconds_at_mile",

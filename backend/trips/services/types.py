@@ -6,7 +6,7 @@ No Django imports. Import these from anywhere in the service layer.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 
 
@@ -144,3 +144,29 @@ class Recommendation:
     decided_by: str
     comparisons: list[RouteComparison]
     headline: str
+
+
+@dataclass(frozen=True)
+class RouteCandidate:
+    """A route candidate retrieved from Mapbox or alternative generation.
+
+    Attributes:
+        id:                 Assigned identifier ("A", "B", "C")
+        source:             "mapbox_primary", "mapbox_alternative", "avoid_tolls",
+                            "avoid_highways", or "via_waypoint"
+        name:               Short name or summary (e.g. "I-35 N and US-287 N")
+        distance_miles:     Length in miles
+        duration_seconds:   Travel time in seconds
+        geometry:           GeoJSON coordinates [[lon, lat], ...]
+        annotations:        Optional dict {"distance": [...], "duration": [...]}
+        warnings:           List of warnings encountered during parsing
+    """
+
+    id: str
+    source: str
+    name: str
+    distance_miles: float
+    duration_seconds: float
+    geometry: list[list[float]]
+    annotations: dict[str, list[float]] | None = None
+    warnings: list[str] = field(default_factory=list)

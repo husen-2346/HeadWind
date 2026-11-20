@@ -135,3 +135,60 @@ def point_at_mile(
     lat = lat1 + t * (lat2 - lat1)
     lon = lon1 + t * (lon2 - lon1)
     return lat, lon
+
+
+def geometry_slice(
+    geometry: Sequence[Sequence[float]],
+    cumulative: Sequence[float],
+    start_mile: float,
+    end_mile: float,
+) -> list[list[float]]:
+    """Return the sub-polyline of GeoJSON [lon, lat] points between start_mile and end_mile.
+
+    Includes the interpolated point at start_mile, any original vertices
+    lying strictly between start_mile and end_mile, and the interpolated
+    point at end_mile.
+
+    Args:
+        geometry:   GeoJSON [lon, lat] coordinates.
+        cumulative: Cumulative distances matching geometry.
+        start_mile: Start distance along route (miles).
+        end_mile:   End distance along route (miles).
+
+    Returns:
+        List of [lon, lat] coordinates.
+    """
+    if not geometry:
+        return []
+    if len(geometry) != len(cumulative):
+        raise ValueError("geometry and cumulative must have the same length")
+
+    # Clamp bounds to route range
+    total_len = cumulative[-1]
+    s_mi = max(0.0, min(start_mile, total_len))
+    e_mi = max(s_mi, min(end_mile, total_len))
+
+    start_lat, start_lon = point_at_mile(geometry, cumulative, s_mi)
+    start_pt = [start_lon, start_lat]
+
+    if e_mi <= s_mi:
+        return [start_pt]
+
+    end_lat, end_lon = point_at_mile(geometry, cumulative, e_mi)
+    end_pt = [end_lon, end_lat]
+
+    slice_coords: list[list[float]] = [start_pt]
+    for i, cum in enumerate(cumulative):
+        if s_mi < cum < e_mi:
+            pt = [geometry[i][0], geometry[i][1]]
+            slice_coords.append(pt)
+
+    slice_coords.append(end_pt)
+
+    # Deduplicate adjacent identical points
+    deduped: list[list[float]] = [slice_coords[0]]
+    for pt in slice_coords[1:]:
+        if pt[0] != deduped[-1][0] or pt[1] != deduped[-1][1]:
+            deduped.append(pt)
+
+    return deduped

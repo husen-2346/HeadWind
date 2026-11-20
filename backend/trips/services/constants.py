@@ -7,6 +7,16 @@ No Django imports. No magic numbers elsewhere in the codebase.
 EARTH_RADIUS_MILES = 3958.8
 
 # ---------------------------------------------------------------------------
+# Candidate selection and route geometry constants
+# ---------------------------------------------------------------------------
+MAX_DISTANCE_MULTIPLIER = 1.4
+MAX_DURATION_MULTIPLIER = 1.5
+SIMILARITY_DUPLICATE_THRESHOLD = 0.90
+SIMILARITY_SAMPLE_MILES = 5.0
+SIMILARITY_TOLERANCE_MILES = 1.5
+SIMPLIFY_TOLERANCE_DEG = 0.0003
+
+# ---------------------------------------------------------------------------
 # Wind thresholds  (mph, sustained, 10 m)
 # Half-open intervals:  [low_bound, high_bound)
 # Top band is open-ended (>= 55 → NO_TRAVEL)
