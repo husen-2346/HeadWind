@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { analyzeTrip } from "@/lib/api/endpoints";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { analyzeTrip, fetchHeatmap } from "@/lib/api/endpoints";
+import { generateMockHeatmap, dallasDenverFixture } from "@/mocks";
 import { ApiError } from "@/lib/api/client";
 import type { TripAnalysisRequest, TripAnalysisResponse } from "@/types/api";
 
 export function useAnalyzeTrip() {
   const [lastData, setLastData] = useState<TripAnalysisResponse | null>(null);
   const activeControllerRef = useRef<AbortController | null>(null);
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<TripAnalysisResponse, ApiError, TripAnalysisRequest>({
     mutationFn: async (request: TripAnalysisRequest) => {
@@ -26,6 +28,38 @@ export function useAnalyzeTrip() {
           activeControllerRef.current = null;
         }
       }
+    },
+    onSuccess: (_data, variables) => {
+      // Prefetch corridor heatmap as soon as analysis succeeds
+      const isMock =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("mock") === "1";
+
+      queryClient.prefetchQuery({
+        queryKey: [
+          "heatmap",
+          variables.origin,
+          variables.destination,
+          variables.departure_local,
+          variables.load_lb,
+          isMock,
+        ],
+        queryFn: ({ signal }) => {
+          if (isMock) {
+            return Promise.resolve(generateMockHeatmap(dallasDenverFixture, variables.load_lb));
+          }
+          return fetchHeatmap(
+            {
+              origin: variables.origin,
+              destination: variables.destination,
+              departure_local: variables.departure_local,
+              load_lb: variables.load_lb,
+            },
+            signal
+          );
+        },
+        staleTime: 10 * 60 * 1000,
+      });
     },
     retry: (failureCount, error) => {
       // Never retry if aborted by user

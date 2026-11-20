@@ -195,3 +195,33 @@ export interface ApiErrorResponse {
 export interface HealthResponse {
   status: string;
 }
+
+export interface HeatmapPoint {
+  lat: number;
+  lon: number;
+  levels: number[]; // 49 hourly risk indices (0..4, or -1 for unknown)
+}
+
+export interface HeatmapMeta {
+  start_utc: string;
+  hour_count: number;
+  timezone: string;
+  timezone_abbr: string;
+  load_lb: number;
+  departure_hour_offset: number | null;
+  weather_status: "ok" | "complete" | "partial" | "unavailable";
+  point_count: number;
+}
+
+export interface HeatmapResponse {
+  meta: HeatmapMeta;
+  warnings: Warning[];
+  points: HeatmapPoint[];
+}
+
+export interface HeatmapRequest {
+  origin: [number, number];
+  destination: [number, number];
+  departure_local: string;
+  load_lb?: number;
+}

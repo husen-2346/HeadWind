@@ -8,3 +8,4 @@ import type { RiskRulesResponse, TripAnalysisResponse } from "@/types/api";
 
 export const dallasDenverFixture = dallasDenverData as unknown as TripAnalysisResponse;
 export const riskRulesFixture = riskRulesData as unknown as RiskRulesResponse;
+export { generateMockHeatmap } from "./heatmapMock";

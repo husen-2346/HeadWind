@@ -6,6 +6,8 @@ import { apiFetch } from "./client";
 import type {
   GeocodeResult,
   HealthResponse,
+  HeatmapRequest,
+  HeatmapResponse,
   RiskRulesResponse,
   TripAnalysisRequest,
   TripAnalysisResponse,
@@ -47,3 +49,16 @@ export async function analyzeTrip(
     timeoutMs: 30000,
   });
 }
+
+export async function fetchHeatmap(
+  request: HeatmapRequest,
+  signal?: AbortSignal
+): Promise<HeatmapResponse> {
+  return apiFetch<HeatmapResponse>("/api/heatmap", {
+    method: "POST",
+    body: JSON.stringify(request),
+    signal,
+    timeoutMs: 30000,
+  });
+}
+

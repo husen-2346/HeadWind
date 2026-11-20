@@ -146,6 +146,28 @@ frontend/src/
 
 ---
 
+## Weather Corridor Heatmap & Time Scrubber
+
+1. **Continuous Corridor Layer (`HeatmapLayer.tsx`)**:
+   - Built from 0.25-deg snapped grid points across candidate routes with a 49-hour `levels` array in feature properties.
+   - Inserted underneath route lines (`beforeId: "layer-routes-unselected"`) so route lines stay visible above the weather corridor.
+   - **Data-Driven Paint Expressions**:
+     - `circle-color`: `["match", ["at", forecastHour, ["get", "levels"]], 0, "rgba(46, 156, 202, 0.45)", 1, "#E8C547", 2, "#F28C28", 3, "#D1344B", 4, "#6A1B4D", "rgba(0,0,0,0)"]`. Low risk renders as faint transparent blue, higher risks render full risk ramp colors, unknown/missing weather renders fully transparent.
+     - `circle-radius`: Zoom-interpolated exponential curve (`[zoom 4: 18px, zoom 6: 34px, zoom 8: 68px, zoom 10: 130px, zoom 12: 230px]`) ensuring points overlap into a continuous, non-blocky 30-mile weather corridor.
+     - `circle-blur`: `0.85` (soft gradient transition between adjacent points).
+     - `circle-opacity`: `0.5` (preserves base map road network visibility).
+     - `circle-sort-key`: `["at", forecastHour, ["get", "levels"]]` so higher risk circles draw on top.
+   - **Zero-Flicker 60 FPS Updates**: Timeline scrubbing updates ONLY paint and layout properties via `requestAnimationFrame` (`setPaintProperty` and `setLayoutProperty`). Never refetches data or rebuilds GeoJSON during scrubbing.
+
+2. **Time Scrubber (`TimeScrubber.tsx`)**:
+   - Floating bottom-center control with hairline border and surface backdrop blur.
+   - **Max Risk Ribbon**: A thin CSS gradient strip above the slider track displaying the maximum weather risk level across all corridor points at each of the 49 hours.
+   - **Departure Pin**: A vertical marker placed at `departure_hour_offset` labeled "Dep".
+   - **Accessibility**: WAI-ARIA `role="slider"`, `aria-valuemin="0"`, `aria-valuemax="48"`, `aria-valuenow`, `aria-valuetext` with formatted day and hour. Keyboard controls (`ArrowLeft`/`ArrowRight` 1h, `PageUp`/`PageDown` 6h, `Home`/`End`).
+   - **Play/Pause Loop**: Cycles 1 hour per 400ms, loops at 48, pauses on user interaction or background tab visibility, and respects `prefers-reduced-motion` by disabling auto-play.
+
+---
+
 ## Route Detail Panel Flow
 
 1. Clicking "Details" on an active route card or clicking an already-selected card sets `appStore.panelState = "detail"`.

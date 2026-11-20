@@ -12,6 +12,7 @@ export function MapLegend() {
   const { data: riskRules } = useRiskRules();
   const { map } = useMap();
   const analysisResult = useAppStore((s) => s.analysisResult);
+  const mode = useAppStore((s) => s.mode);
 
   const levels: { key: RiskLevelName; label: string; wind: string }[] = [
     { key: "low", label: "Low", wind: "<25 mph" },
@@ -38,6 +39,24 @@ export function MapLegend() {
       );
     }
   };
+
+  if (mode === "heatmap") {
+    return (
+      <div className="absolute bottom-24 left-4 md:left-[432px] z-20 flex flex-col items-start gap-2 select-none pointer-events-auto">
+        {analysisResult?.routes && analysisResult.routes.length > 0 && (
+          <button
+            type="button"
+            onClick={handleFitRoutes}
+            aria-label="Fit map to all routes"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface/90 hover:bg-surface border border-border rounded-card text-12 font-mono text-text hover:text-accent shadow-none transition-colors backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <Compass className="w-3.5 h-3.5 text-accent" />
+            <span>Fit corridor</span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="absolute bottom-6 left-4 md:left-[432px] z-20 flex flex-col items-start gap-2 select-none pointer-events-auto">

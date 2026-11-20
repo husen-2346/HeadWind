@@ -21,6 +21,7 @@ export function RoutesLayers() {
   const selectedRouteId = useAppStore((s) => s.selectedRouteId);
   const hoveredRouteId = useAppStore((s) => s.hoveredRouteId);
   const selectedCheckpointIndex = useAppStore((s) => s.selectedCheckpointIndex);
+  const mode = useAppStore((s) => s.mode);
 
   const setSelectedRouteId = useAppStore((s) => s.setSelectedRouteId);
   const setHoveredRouteId = useAppStore((s) => s.setHoveredRouteId);
@@ -294,6 +295,16 @@ export function RoutesLayers() {
       );
     }
   }, [map, isReady, hoveredRouteId]);
+
+  // 4. Toggle Checkpoints Layer visibility based on mode
+  useEffect(() => {
+    if (!map || !isReady || !layersInitializedRef.current || !map.getLayer("layer-checkpoints")) return;
+    map.setLayoutProperty(
+      "layer-checkpoints",
+      "visibility",
+      mode === "heatmap" ? "none" : "visible"
+    );
+  }, [map, isReady, mode]);
 
   // 4. Checkpoint Selection & Shared Popup
   useEffect(() => {
