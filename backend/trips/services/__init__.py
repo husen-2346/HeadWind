@@ -23,7 +23,12 @@ from .constants import (
     SIMILARITY_TOLERANCE_MILES,
     SIMPLIFY_TOLERANCE_DEG,
 )
-from .eta import eta_datetime, eta_seconds_at_mile, linear_profile
+from .eta import (
+    build_profile_from_annotations,
+    eta_datetime,
+    eta_seconds_at_mile,
+    linear_profile,
+)
 from .geo import cumulative_miles, geometry_slice, haversine_miles, point_at_mile
 from .recommend import rank_routes
 from .risk import classify_checkpoint, classify_rain, classify_snow, classify_wind
@@ -38,6 +43,7 @@ from .types import (
     RouteSummary,
     Weather,
 )
+from .weather_lookup import lookup_weather
 
 __all__ = [
     # constants
@@ -73,6 +79,7 @@ __all__ = [
     "select_routes",
     "simplify_polyline",
     # eta
+    "build_profile_from_annotations",
     "eta_datetime",
     "eta_seconds_at_mile",
     "linear_profile",
@@ -81,6 +88,8 @@ __all__ = [
     "classify_rain",
     "classify_snow",
     "classify_checkpoint",
+    # weather lookup
+    "lookup_weather",
     # analysis
     "analyze_route",
     # recommend
