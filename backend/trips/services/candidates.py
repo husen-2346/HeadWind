@@ -24,9 +24,12 @@ from .types import RouteCandidate
 def offset_waypoint(
     origin: tuple[float, float],
     dest: tuple[float, float],
-    along_fraction: float,
-    offset_fraction: float,
-    side: str,
+    along_fraction: float = 0.5,
+    offset_fraction: float = 0.15,
+    side: str = "left",
+    *,
+    fraction: float | None = None,
+    lateral_frac: float | None = None,
 ) -> tuple[float, float]:
     """Calculate a via-waypoint offset perpendicularly from the straight-line path.
 
@@ -36,10 +39,18 @@ def offset_waypoint(
         along_fraction:  Fraction along origin-dest line (0.0 to 1.0, e.g. 0.5).
         offset_fraction: Fraction of line length to offset (e.g. 0.15, 0.25).
         side:            "left" or "right" relative to travel direction.
+        fraction:        Alias for along_fraction.
+        lateral_frac:    Signed lateral fraction (+ for right, - for left).
 
     Returns:
         (latitude, longitude) of waypoint, rounded to 5 decimals.
     """
+    if fraction is not None:
+        along_fraction = fraction
+    if lateral_frac is not None:
+        offset_fraction = abs(lateral_frac)
+        side = "right" if lateral_frac >= 0 else "left"
+
     lat1, lon1 = origin
     lat2, lon2 = dest
 

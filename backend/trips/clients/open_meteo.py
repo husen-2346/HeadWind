@@ -160,3 +160,6 @@ class OpenMeteoClient:
                             set_cached_weather(key, hourly)
 
         return results
+
+    # Alias for convenience
+    get_forecasts = fetch_forecasts_for_coordinates
