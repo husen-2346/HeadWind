@@ -88,6 +88,21 @@ export interface RouteOption {
   checkpoints: Checkpoint[];
 }
 
+export interface RouteComparison {
+  route_id: string;
+  criterion: string;
+  best_value: unknown;
+  other_value: unknown;
+}
+
+export interface Recommendation {
+  best_route_id: string;
+  ranked_route_ids: string[];
+  decided_by: string;
+  comparisons: RouteComparison[];
+  headline: string;
+}
+
 export interface TripAnalysisRequest {
   origin: [number, number]; // [lon, lat]
   destination: [number, number]; // [lon, lat]
