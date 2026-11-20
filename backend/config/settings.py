@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.middleware.gzip.GZipMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -118,11 +119,24 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
-# Django REST Framework configuration (JSON only renderer)
+# Django REST Framework configuration (JSON only renderer, scoped throttling, unified exception handler)
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "geocode": "60/min",
+        "analyze": "12/min",
+    },
+    "EXCEPTION_HANDLER": "trips.errors.drf_exception_handler",
     "UNAUTHENTICATED_USER": None,
 }
 
-# Third-party API keys
+# Third-party API keys and integration settings
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN", "")
+OPEN_METEO_BASE_URL = os.getenv("OPEN_METEO_BASE_URL", "https://api.open-meteo.com/v1/forecast")
+MAX_DEPARTURE_HOURS_AHEAD = int(os.getenv("MAX_DEPARTURE_HOURS_AHEAD", "72"))
+WEATHER_FORECAST_DAYS = int(os.getenv("WEATHER_FORECAST_DAYS", "5"))
+DIRECTIONS_CACHE_TTL = int(os.getenv("DIRECTIONS_CACHE_TTL", "3600"))
+WEATHER_CACHE_TTL = int(os.getenv("WEATHER_CACHE_TTL", "1800"))
