@@ -16,6 +16,7 @@ Headwind backend provides REST endpoints for weather-aware truck route analysis,
 | `GET` | `/api/risk-rules` | Canonical weather risk levels and load rules | Unlimited |
 | `GET` | `/api/geocode?q=...` | Forward geocoding search suggestions | 60 req / min |
 | `POST` | `/api/analyze` | Full trip route analysis, weather lookup, and ranking | 12 req / min |
+| `POST` | `/api/heatmap` | 49-hour weather risk corridor heatmap | 12 req / min |
 
 ---
 
@@ -285,7 +286,47 @@ curl -X POST http://localhost:8000/api/analyze \
 
 ---
 
-## 5. Error Codes & Handling
+## 5. POST /api/heatmap
+
+Generates a 49-hour weather risk corridor across candidate routes between origin and destination, evaluating risk indices (0–4, or -1 for unknown) at each hour from the current UTC hour (`start_utc`). Reuses directions cached during trip analysis.
+
+### Request Body
+```json
+{
+  "origin": [-96.7970, 32.7767],
+  "destination": [-104.9903, 39.7392],
+  "departure_local": "2026-11-21T06:00:00",
+  "load_lb": 42000
+}
+```
+
+### Response `200 OK`
+```json
+{
+  "meta": {
+    "start_utc": "2026-11-20T12:00:00Z",
+    "hour_count": 49,
+    "timezone": "America/Chicago",
+    "timezone_abbr": "CST",
+    "load_lb": 42000,
+    "departure_hour_offset": 18,
+    "weather_status": "ok",
+    "point_count": 142
+  },
+  "warnings": [],
+  "points": [
+    {
+      "lat": 32.75,
+      "lon": -96.75,
+      "levels": [0, 0, 1, 1, 2, 2, 3, ...]
+    }
+  ]
+}
+```
+
+---
+
+## 6. Error Codes & Handling
 
 All error responses return a standardized format:
 
@@ -310,7 +351,8 @@ All error responses return a standardized format:
 
 ---
 
-## 6. Caching & Performance
+## 7. Caching & Performance
 - **Directions Cache**: Keyed to `[lat, lon]` rounded to 4 decimal places (~11 m precision), cached for 3600 seconds.
 - **Weather Cache**: Keyed to `[lat, lon]` rounded to 2 decimal places (~1.1 km precision), cached for 1800 seconds.
+- **Heatmap Cache**: Keyed to origin, destination, load, and UTC start hour, cached for 600 seconds (10 minutes).
 - **GZip Compression**: Responses over 200 bytes are gzip-compressed via Django `GZipMiddleware`.

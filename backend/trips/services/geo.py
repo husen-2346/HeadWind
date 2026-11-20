@@ -192,3 +192,144 @@ def geometry_slice(
             deduped.append(pt)
 
     return deduped
+
+
+def bearing_degrees(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate the initial bearing in degrees from (lat1, lon1) to (lat2, lon2).
+
+    Args:
+        lat1, lon1: Start point in decimal degrees.
+        lat2, lon2: End point in decimal degrees.
+
+    Returns:
+        Bearing in degrees clockwise from true north in range [0, 360).
+    """
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_lam = math.radians(lon2 - lon1)
+
+    y = math.sin(delta_lam) * math.cos(phi2)
+    x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lam)
+    theta = math.atan2(y, x)
+    return (math.degrees(theta) + 360) % 360
+
+
+def offset_point(
+    lat: float,
+    lon: float,
+    bearing_deg: float,
+    miles: float,
+) -> tuple[float, float]:
+    """Calculate the destination (lat, lon) traveling `miles` on initial bearing `bearing_deg`.
+
+    Args:
+        lat, lon: Starting point in decimal degrees (conventional order).
+        bearing_deg: Initial bearing in degrees clockwise from true north.
+        miles: Distance to travel in statute miles.
+
+    Returns:
+        (latitude, longitude) in decimal degrees.
+    """
+    if miles == 0.0:
+        return lat, lon
+
+    phi1 = math.radians(lat)
+    lam1 = math.radians(lon)
+    theta = math.radians(bearing_deg)
+    delta = miles / EARTH_RADIUS_MILES
+
+    sin_phi2 = math.sin(phi1) * math.cos(delta) + math.cos(phi1) * math.sin(delta) * math.cos(theta)
+    phi2 = math.asin(max(-1.0, min(1.0, sin_phi2)))
+
+    y = math.sin(theta) * math.sin(delta) * math.cos(phi1)
+    x = math.cos(delta) - math.sin(phi1) * math.sin(phi2)
+    lam2 = lam1 + math.atan2(y, x)
+
+    lon2 = (math.degrees(lam2) + 540) % 360 - 180
+    lat2 = math.degrees(phi2)
+    return lat2, lon2
+
+
+def corridor_points(
+    geometries: Sequence[Sequence[Sequence[float]]],
+    spacing_miles: float,
+    lateral_miles: float = 25.0,
+    cell_deg: float = 0.25,
+    max_points: int = 300,
+) -> list[tuple[float, float]]:
+    """Generate snapped corridor grid points along a set of route geometries.
+
+    Samples points every `spacing_miles` along each route geometry, adds lateral
+    offsets at -lateral_miles, 0, and +lateral_miles perpendicular to local route
+    bearing, snaps to a grid of `cell_deg` degrees, and deduplicates.
+    If the number of unique points exceeds `max_points`, spacing is increased
+    until the count is capped under `max_points`.
+
+    Args:
+        geometries: List of GeoJSON [lon, lat] coordinate sequences.
+        spacing_miles: Sampling spacing along routes in miles.
+        lateral_miles: Lateral distance to offset left/right in miles.
+        cell_deg: Grid resolution in decimal degrees.
+        max_points: Maximum allowed points in returned corridor.
+
+    Returns:
+        Sorted list of unique (lat, lon) tuples.
+    """
+    valid_geoms = [g for g in geometries if g]
+    if not valid_geoms:
+        return []
+
+    cur_spacing = max(1.0, float(spacing_miles))
+    for _ in range(50):
+        points_set: set[tuple[float, float]] = set()
+
+        for geom in valid_geoms:
+            cum = cumulative_miles(geom)
+            total_dist = cum[-1] if cum else 0.0
+
+            if total_dist <= 0.0:
+                lon0, lat0 = geom[0][0], geom[0][1]
+                s_lat = round(round(lat0 / cell_deg) * cell_deg, 4)
+                s_lon = round(round(lon0 / cell_deg) * cell_deg, 4)
+                points_set.add((s_lat, s_lon))
+                continue
+
+            num_steps = int(total_dist // cur_spacing)
+            dists = [i * cur_spacing for i in range(num_steps + 1)]
+            if dists[-1] < total_dist:
+                dists.append(total_dist)
+
+            for d in dists:
+                lo, hi = 0, len(cum) - 1
+                while lo + 1 < hi:
+                    mid = (lo + hi) // 2
+                    if cum[mid] <= d:
+                        lo = mid
+                    else:
+                        hi = mid
+
+                lon1, lat1 = geom[lo][0], geom[lo][1]
+                lon2, lat2 = geom[hi][0], geom[hi][1]
+                if lat1 == lat2 and lon1 == lon2 and hi + 1 < len(geom):
+                    lon2, lat2 = geom[hi + 1][0], geom[hi + 1][1]
+
+                bearing = bearing_degrees(lat1, lon1, lat2, lon2)
+                lat0, lon0 = point_at_mile(geom, cum, d)
+
+                candidates = [
+                    (lat0, lon0),
+                    offset_point(lat0, lon0, (bearing + 90) % 360, lateral_miles),
+                    offset_point(lat0, lon0, (bearing - 90) % 360, lateral_miles),
+                ]
+
+                for p_lat, p_lon in candidates:
+                    s_lat = round(round(p_lat / cell_deg) * cell_deg, 4)
+                    s_lon = round(round(p_lon / cell_deg) * cell_deg, 4)
+                    points_set.add((s_lat, s_lon))
+
+        if len(points_set) <= max_points or cur_spacing >= 500.0:
+            return sorted(points_set, key=lambda p: (p[0], p[1]))
+
+        cur_spacing = cur_spacing * 1.35 + 5.0
+
+    return sorted(points_set, key=lambda p: (p[0], p[1]))

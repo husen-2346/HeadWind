@@ -51,3 +51,27 @@ def get_cached_weather(key: str) -> dict[str, Any] | None:
 def set_cached_weather(key: str, data: dict[str, Any], ttl: int | None = None) -> None:
     timeout = ttl if ttl is not None else getattr(settings, "WEATHER_CACHE_TTL", 1800)
     cache.set(key, data, timeout=timeout)
+
+
+def heatmap_cache_key(
+    origin: tuple[float, float],
+    destination: tuple[float, float],
+    load_lb: int,
+    start_hour_iso: str,
+) -> str:
+    """Build cache key for corridor heatmap query.
+
+    Coordinates rounded to 4 decimals, load in lb, start hour in ISO format.
+    """
+    orig_str = f"{origin[0]:.4f},{origin[1]:.4f}"
+    dest_str = f"{destination[0]:.4f},{destination[1]:.4f}"
+    return f"headwind:heatmap:{orig_str}:{dest_str}:{load_lb}:{start_hour_iso}"
+
+
+def get_cached_heatmap(key: str) -> dict[str, Any] | None:
+    return cache.get(key)
+
+
+def set_cached_heatmap(key: str, data: dict[str, Any], ttl: int = 600) -> None:
+    """Cache heatmap response for 10 minutes (600s) default."""
+    cache.set(key, data, timeout=ttl)

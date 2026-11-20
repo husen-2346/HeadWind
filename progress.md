@@ -217,6 +217,19 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - **Test suite**: 183 passed tests (56 new tests across test_stage_a.py, test_stage_b.py, test_stage_c.py, test_stage_d.py)
 - **Coverage**: **95%** across all backend code
 
+## Phase 5 Log (Stage A)
+- Implemented `offset_point`, `bearing_degrees`, and `corridor_points` in `backend/trips/services/geo.py`:
+  - `offset_point(lat, lon, bearing_deg, miles)` computes destination point using spherical haversine formula.
+  - `bearing_degrees(lat1, lon1, lat2, lon2)` calculates true north forward bearing.
+  - `corridor_points(geometries, spacing_miles, lateral_miles, cell_deg, max_points)` generates lateral offset corridor points at -lateral, 0, and +lateral miles perpendicular to route bearing, snapped to 0.25-deg grid, deduped, and capped at 300 points.
+- Created `CorridorHeatmapAnalyzer` in `backend/trips/usecases/heatmap.py`:
+  - 49-hour forecast risk indexing across all corridor points from current UTC hour (`start_utc`).
+  - Evaluates risk levels (0–4 or -1 for unknown) using canonical risk and load escalation rules.
+  - 10-minute caching keyed by `(origin, destination, load_lb, start_utc_iso)`.
+- Added `POST /api/heatmap` in `trips/views.py` and `trips/urls.py` with 12 req/min rate limit.
+- 194 passed backend tests (11 new tests in `test_heatmap.py`).
+- 96% test coverage across all backend code. Ruff check & format clean.
+
 ## Phase 1 Log
 - Created `backend/trips/services/`: constants.py, types.py, geo.py, sampling.py, eta.py, risk.py, analysis.py, recommend.py, __init__.py
 - 127 tests across test_risk.py, test_geo_sampling.py, test_eta.py, test_analysis.py, test_recommend.py, test_end_to_end.py

@@ -54,39 +54,14 @@ class TripAnalyzer:
         self.weather = weather_client if weather_client is not None else OpenMeteoClient()
         self.clock_now = clock_now
 
-    def analyze(
+    def get_selected_routes(
         self,
-        origin: list[float],
-        destination: list[float],
-        departure_local: str,
-        load_lb: int = 40000,
-        interval_miles: int = 25,
-    ) -> dict[str, Any]:
-        """Execute the end-to-end trip analysis pipeline.
-
-        Args:
-            origin: [lon, lat] coordinate pair.
-            destination: [lon, lat] coordinate pair.
-            departure_local: ISO 8601 local departure timestamp.
-            load_lb: Cargo weight in pounds.
-            interval_miles: Weather checkpoint sampling interval (10, 25, or 50).
-
-        Returns:
-            Dictionary matching the API response schema.
-        """
-        if load_lb <= 0:
-            load_lb = 40000
-        start_total = time.perf_counter()
-        orig_lon, orig_lat = origin
-        dest_lon, dest_lat = destination
-
-        # 1. Resolve departure datetime and origin timezone
-        dep_local_dt, dep_utc_dt, tz_name, _ = resolve_departure(
-            departure_local, orig_lat, orig_lon, clock_now=self.clock_now
-        )
-
-        # 2. Mapbox primary directions + diversity fallbacks
-        t_routing_start = time.perf_counter()
+        orig_lat: float,
+        orig_lon: float,
+        dest_lat: float,
+        dest_lon: float,
+    ) -> tuple[list[RouteCandidate], list[dict[str, str]]]:
+        """Fetch primary and diverse variant routes, selecting up to 3."""
         primary_candidates = self.mapbox.directions(
             origin=(orig_lat, orig_lon),
             destination=(dest_lat, dest_lon),
@@ -94,7 +69,6 @@ class TripAnalyzer:
             source="primary",
         )
         selected = select_routes(primary_candidates, max_routes=3)
-
         warnings: list[dict[str, str]] = []
 
         if len(selected) < 3:
@@ -190,6 +164,42 @@ class TripAnalyzer:
                 }
             )
 
+        return selected, warnings
+
+    def analyze(
+        self,
+        origin: list[float],
+        destination: list[float],
+        departure_local: str,
+        load_lb: int = 40000,
+        interval_miles: int = 25,
+    ) -> dict[str, Any]:
+        """Execute the end-to-end trip analysis pipeline.
+
+        Args:
+            origin: [lon, lat] coordinate pair.
+            destination: [lon, lat] coordinate pair.
+            departure_local: ISO 8601 local departure timestamp.
+            load_lb: Cargo weight in pounds.
+            interval_miles: Weather checkpoint sampling interval (10, 25, or 50).
+
+        Returns:
+            Dictionary matching the API response schema.
+        """
+        if load_lb <= 0:
+            load_lb = 40000
+        start_total = time.perf_counter()
+        orig_lon, orig_lat = origin
+        dest_lon, dest_lat = destination
+
+        # 1. Resolve departure datetime and origin timezone
+        dep_local_dt, dep_utc_dt, tz_name, _ = resolve_departure(
+            departure_local, orig_lat, orig_lon, clock_now=self.clock_now
+        )
+
+        # 2. Mapbox primary directions + diversity fallbacks
+        t_routing_start = time.perf_counter()
+        selected, warnings = self.get_selected_routes(orig_lat, orig_lon, dest_lat, dest_lon)
         routing_ms = max(1, int(round((time.perf_counter() - t_routing_start) * 1000)))
 
         # 3. Checkpoint sampling & ETA calculation per route

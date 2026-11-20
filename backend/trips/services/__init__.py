@@ -29,7 +29,15 @@ from .eta import (
     eta_seconds_at_mile,
     linear_profile,
 )
-from .geo import cumulative_miles, geometry_slice, haversine_miles, point_at_mile
+from .geo import (
+    bearing_degrees,
+    corridor_points,
+    cumulative_miles,
+    geometry_slice,
+    haversine_miles,
+    offset_point,
+    point_at_mile,
+)
 from .recommend import rank_routes
 from .risk import classify_checkpoint, classify_rain, classify_snow, classify_wind
 from .sampling import sample_checkpoints, segment_miles_owned
@@ -66,9 +74,12 @@ __all__ = [
     "RouteSummary",
     "Weather",
     # geo
+    "bearing_degrees",
+    "corridor_points",
     "cumulative_miles",
     "geometry_slice",
     "haversine_miles",
+    "offset_point",
     "point_at_mile",
     # sampling
     "sample_checkpoints",

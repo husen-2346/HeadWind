@@ -14,6 +14,7 @@ from trips.errors import ValidationError
 from trips.serializers import AnalyzeTripRequestSerializer
 from trips.services.constants import RISK_RULES
 from trips.usecases.analyze_trip import TripAnalyzer
+from trips.usecases.heatmap import CorridorHeatmapAnalyzer
 
 
 class HealthCheckView(APIView):
@@ -68,5 +69,28 @@ class AnalyzeTripView(APIView):
             departure_local=validated["departure_local"],
             load_lb=validated.get("load_lb", 0),
             interval_miles=validated.get("interval_miles", 25),
+        )
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class HeatmapView(APIView):
+    """Generates 49-hour weather risk corridor heatmap across candidate routes.
+
+    Throttled at 12 requests per minute.
+    """
+
+    throttle_scope = "heatmap"
+
+    def post(self, request: Request) -> Response:
+        serializer = AnalyzeTripRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated = serializer.validated_data
+
+        analyzer = CorridorHeatmapAnalyzer()
+        result = analyzer.generate_heatmap(
+            origin=validated["origin"],
+            destination=validated["destination"],
+            departure_local=validated["departure_local"],
+            load_lb=validated.get("load_lb", 40000),
         )
         return Response(result, status=status.HTTP_200_OK)

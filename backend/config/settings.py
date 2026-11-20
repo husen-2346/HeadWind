@@ -128,6 +128,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "geocode": "60/min",
         "analyze": "12/min",
+        "heatmap": "12/min",
     },
     "EXCEPTION_HANDLER": "trips.errors.drf_exception_handler",
     "UNAUTHENTICATED_USER": None,
