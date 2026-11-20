@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -14,12 +17,17 @@
     "@fontsource-variable/geist-mono": "^5.1.0",
     "@tanstack/react-query": "^5.62.7",
     "clsx": "^2.1.1",
+    "lucide-react": "^1.76.0",
     "mapbox-gl": "^3.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^8.0.0",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
     "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
@@ -33,10 +41,12 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.13.0",
+    "jsdom": "^31.0.1",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.16",
     "typescript": "~5.6.3",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^5.1.1"
   }
 }

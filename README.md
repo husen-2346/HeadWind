@@ -3,15 +3,15 @@
 Headwind is a weather-aware truck routing web application that helps truck drivers evaluate multiple route options between an origin and destination to select the safest journey based on forecasted weather, load weight, and travel time.
 
 ## Tech Stack
-- **Frontend**: Vite, React 19, TypeScript, Tailwind CSS, React Router, TanStack Query, Mapbox GL JS v3, Geist Sans & Geist Mono
-- **Backend**: Python 3.12+, Django 5, Django REST Framework, django-cors-headers, httpx, python-dotenv, pytest, gunicorn, whitenoise
+- **Frontend**: Vite 6, React 18, TypeScript 5.6, Tailwind CSS 3.4, React Router v6, TanStack Query v5, Mapbox GL JS v3, Geist Sans & Geist Mono
+- **Backend**: Python 3.13, Django 5.1, Django REST Framework 3.15, django-cors-headers, httpx, python-dotenv, pytest, gunicorn, whitenoise
 - **APIs**: Mapbox Directions & Geocoding, Open-Meteo Weather Forecast API
 
 ## Quickstart
 
 ### Prerequisites
 - Node.js 20+ and npm
-- Python 3.12+
+- Python 3.13 (see `backend/.python-version`)
 - Mapbox Access Token (public token for frontend and backend)
 
 ### Backend Setup

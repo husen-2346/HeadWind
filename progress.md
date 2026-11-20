@@ -114,12 +114,23 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - [x] Phase 0: Project setup (monorepo, docs, tokens, frontend scaffold, backend scaffold, routing spike)
 - [x] Phase 1: Backend core logic and tests (risk, sampling, ETA, analysis, ranking — 127 tests, 98% coverage)
 - [x] Phase 2: Backend integrations and API (Mapbox routing, Open-Meteo weather, orchestrator, trip endpoints — 183 tests, 95% coverage)
-- [ ] Phase 3: Frontend foundation and app shell
+- [ ] Phase 3: Frontend foundation and app shell (Stage A complete: housekeeping, tooling, test framework, proxy)
 - [ ] Phase 4: Planner, map, route cards, recommendation
 - [ ] Phase 5: Route detail and checkpoint table
 - [ ] Phase 6: Heatmap and 0-48h slider
 - [ ] Phase 7: Landing page, states, mobile, accessibility, performance
 - [ ] Phase 8: README, final tests, deploy prep
+
+## Phase 3 Log
+- **Stage A (Housekeeping & Tooling)**:
+  - Deleted stray file `tatus` from workspace root.
+  - Reconciled versions across `README.md`, `package.json`, and `progress.md` (Vite 6, React 18, TS 5.6, Tailwind 3.4, Python 3.13.7).
+  - Created `backend/.python-version` pinned to `3.13.7`.
+  - Ran security checks on `git ls-files` and `git log -p -S` verifying zero leaked tokens or unignored `.env` files.
+  - Added frontend test & runtime dependencies: `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `zustand`, `lucide-react`.
+  - Configured Vite dev proxy (`/api` -> `http://localhost:8000`).
+  - Added npm scripts: `typecheck` (`tsc --noEmit`), `test` (`vitest`), `test:run` (`vitest run`).
+  - Verified Geist Sans Variable and Geist Mono Variable font assets (`.woff2`) are properly extracted and mapped in production build (`dist/assets/`).
 
 ## Phase 2 Log
 - Created `backend/trips/clients/`: `http.py` (retries, timeouts, token redaction), `mapbox.py` (Directions v5, Geocode v6), `open_meteo.py` (chunking <=50, parallel fetching, unit checks)
@@ -159,10 +170,11 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - `decided_by` = criterion separating best from runner-up (not from worst); for A(46 severe)/B(0 severe,28 high)/C(0 severe,61 high): B beats C on `high_miles` (both have 0 severe), so `decided_by=high_miles`
 
 ## Next Step
-Phase 3: Frontend foundation and app shell
-  - Set up API client and TanStack Query hooks for `/api/health`, `/api/risk-rules`, `/api/geocode`, `/api/analyze`
-  - Implement app shell, layout, navigation, and state stores
-  - Ensure Geist Sans / Mono typography and token consistency
+Phase 3 - Stage B: typed API layer and data hooks
+  - Create `src/types/api.ts` mirroring real backend models
+  - Implement `src/lib/api/client.ts` with typed `ApiError`, abort signal, and timeouts
+  - Implement `src/lib/api/endpoints.ts` and React Query hooks (`useRiskRules`, `useGeocode`, `useAnalyzeTrip`)
+  - Capture and export real fixtures (`src/mocks/dallas-denver.json`, `src/mocks/index.ts`)
 
 ## Known Issues
 - `segment_miles_owned`: line 62 of sampling.py is unreachable in current test paths (empty geometry guard before this branch)
