@@ -1,0 +1,38 @@
+/**
+ * icons.tsx – Re-exports curated Lucide icons with consistent stroke and size defaults.
+ */
+
+export {
+  AlertOctagon,
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Circle,
+  Clock,
+  CloudRain,
+  Compass,
+  Diamond,
+  Eye,
+  EyeOff,
+  HelpCircle,
+  Info,
+  Layers,
+  Loader2,
+  MapPin,
+  Menu,
+  Navigation,
+  RotateCcw,
+  Search,
+  Sliders,
+  Snowflake,
+  Square,
+  Triangle,
+  Wind,
+  X,
+  XCircle,
+} from "lucide-react";
