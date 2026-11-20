@@ -75,7 +75,7 @@ export function RiskBar({ summary, routeLabel = "Route", className }: RiskBarPro
             style={{
               width: `${unknownPct}%`,
               backgroundImage:
-                "repeating-linear-gradient(45deg, #1F2A37, #1F2A37 3px, #8B98A5 3px, #8B98A5 6px)",
+                "repeating-linear-gradient(45deg, var(--color-border), var(--color-border) 3px, var(--color-text-muted) 3px, var(--color-text-muted) 6px)",
             }}
             className="h-full opacity-60"
           />

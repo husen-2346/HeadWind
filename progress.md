@@ -115,11 +115,48 @@ rank_routes(summaries_by_route_id) -> Recommendation
 - [x] Phase 1: Backend core logic and tests (risk, sampling, ETA, analysis, ranking — 127 tests, 98% coverage)
 - [x] Phase 2: Backend integrations and API (Mapbox routing, Open-Meteo weather, orchestrator, trip endpoints — 183 tests, 95% coverage)
 - [x] Phase 3: Frontend foundation and app shell (Stages A, B, C, D, E complete — 52 Vitest tests, 0 lint/type errors, clean build)
-- [ ] Phase 4: Planner, map, route cards, recommendation
-- [ ] Phase 5: Route detail and checkpoint table
+- [x] Phase 4: Planner, map, route cards, recommendation (Stages 0, A, B, C, D, E, F complete — 102 Vitest tests)
+- [x] Phase 5: Route detail and checkpoint table (merged into Phase 4)
 - [ ] Phase 6: Heatmap and 0-48h slider
 - [ ] Phase 7: Landing page, states, mobile, accessibility, performance
 - [ ] Phase 8: README, final tests, deploy prep
+
+## Phase 4 Log (Includes Phase 5)
+- **Stage 0 (Audit Phase 3 & Gap Closure)**:
+  - Audited items (a) through (f): built missing `src/lib/geo.ts` (`haversineMiles`), updated API fetch client timeouts to 30s analyze / 8s others, converted `useAnalyzeTrip` to mutation with previous-data retention and abort capability.
+  - Implemented client-side validation in `src/features/planner/validation.ts`: places at least 2 miles apart, load integer 1..100,000, interval 10/25/50, departure within now-1h to now+72h.
+  - Built accessible UI primitives: `Combobox` (role="combobox", aria-activedescendant, arrow navigation, Enter/Escape), `NumberInput` (comma formatting, unit suffix), `Tooltip` (accessible hover & focus, Escape closes), `ErrorState`.
+  - Replaced drop shadows on panels with crisp hairline borders (`border border-border`).
+- **Stage A (Planner Form & URL Sync)**:
+  - Created `src/features/planner/PlannerForm.tsx` and `LoadRulesNote.tsx` (reads rules from `useRiskRules()`).
+  - Origin & Destination: Combobox bound to `useGeocode`, swap button, clear button, searching/no-matches states.
+  - Departure: datetime-local input defaulting to next day 06:00 with origin timezone helper.
+  - Load weight: NumberInput with preset chips (20,000 / 42,000 / 60,000 lb).
+  - Interval: SegmentedControl 10 / 25 / 50 miles.
+  - Analyze button: disabled reason, loading spinner, cancel action aborting request.
+  - URL sync: inputs mapped to `o`, `d`, `t`, `w`, `i` on submit; pre-filled on load without auto-submitting.
+- **Stage B (Results, Recommendation & Route Cards)**:
+  - Created `src/lib/labels.ts`: plain-language mappings for route sources, `decided_by` criteria, and comparison sentences.
+  - Created `src/components/routes/RiskBar.tsx`: multi-segment stacked risk bar with hatched unknown segment and accessible text equivalent.
+  - Created `src/components/routes/RecommendationBanner.tsx`: verbatim backend headline, recommended badge, collapsible "How we decided" disclosure.
+  - Created `src/components/routes/RouteCard.tsx`: letter badge, source label, distance, duration, delta vs fastest, max risk badge, risk bar, ETA, and Details action.
+  - Created `src/features/routes/RouteResults.tsx`: handles idle, loading, error, weather unavailable, partial weather, fewer than 3 routes, and backend warnings.
+- **Stage C (Interactive Map Layers & Legend)**:
+  - Created `src/components/map/geojson.ts`: pure builders for unselected routes, selected casing, risk segments, checkpoints, and terminals.
+  - Created `src/components/map/icons.ts`: WebGL symbol image generators for all risk shapes (`circle`, `triangle`, `diamond`, `square`, `octagon`, `ring`) and origin/destination pins.
+  - Created `src/components/map/RoutesLayers.tsx`: stable GeoJSON sources updated via `setData`, data-driven segment line styling, hover opacity sync, clicking line selects route, clicking checkpoint selects it, shared reusable Mapbox Popup with token styling.
+  - Created `src/components/map/MapLegend.tsx`: dynamic legend reading wind thresholds from `/api/risk-rules` and floating "Fit routes" camera control.
+  - Respects `prefers-reduced-motion` with `duration: 0`.
+- **Stage D (Route Detail & Checkpoint Table)**:
+  - Added `panelState = "detail"` to Zustand store.
+  - Created `src/features/routes/criteria.ts`: `buildCriteriaRows` helper implementing exact lexicographic ranking order, fading eliminated non-winning routes, highlighting deciding criterion.
+  - Created `src/components/routes/CriteriaComparison.tsx`: visual ranking comparison bar chart.
+  - Created `src/features/routes/CheckpointTable.tsx`: sticky header, right-aligned tabular numerals, keyboard selection (Arrow keys, Enter, Space), `content-visibility: auto` rendering optimization, and escalation tooltip.
+  - Created `src/features/routes/RouteDetailPanel.tsx`: detail inspection view with back button, 3 key metrics, criteria comparison, and checkpoint table.
+- **Stage E (Mobile & Performance)**:
+  - Mobile bottom sheet with collapsed summary bar and edit toggle.
+  - Code-split Mapbox GL JS into dedicated vendor chunk (`manualChunks: { mapbox: ["mapbox-gl"] }`), keeping landing bundle at 209 kB.
+  - All test suites passing: **17 test files, 102 passed unit tests**, 0 lint errors, 0 type errors.
 
 ## Phase 3 Log
 - **Stage A (Housekeeping & Tooling)**:
@@ -194,16 +231,13 @@ rank_routes(summaries_by_route_id) -> Recommendation
   - `decided_by` = criterion separating best from runner-up (not from worst); for A(46 severe)/B(0 severe,28 high)/C(0 severe,61 high): B beats C on `high_miles` (both have 0 severe), so `decided_by=high_miles`
 
 ## Next Step
-Phase 4: Planner, map, route cards, recommendation
-  - Implement origin/destination autocomplete input with Mapbox geocoding query.
-  - Implement departure date/time picker with timezone awareness and load weight input with validation.
-  - Connect `useAnalyzeTrip` mutation on submit to call `POST /api/analyze`.
-  - Render 3 candidate route lines on Mapbox GL JS map with risk segment colors.
-  - Render route cards with summary metrics, recommendation badge, and interactive hover/selection.
-  - Add checkpoint markers and selection synchronization between cards and map.
+Phase 6: Heatmap and 0-48h slider
+  - Build weather heatmap layer along the trip corridor using Open-Meteo hourly forecast data.
+  - Implement 0–48 hour slider control at the bottom center of the screen.
+  - Connect slider time offset to appStore.forecastHour and update heatmap tiles / checkpoint weather dynamically.
 
 ## Known Issues
 - `segment_miles_owned`: line 62 of sampling.py is unreachable in current test paths (empty geometry guard before this branch)
 
 ## Resume Instructions
-Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist (Phase 4).
+Read this file and `AGENTS.md`, continue at the first unchecked item in the Phase Checklist (Phase 6).
